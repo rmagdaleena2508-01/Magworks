@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <rect x="1" y="1" width="198" height="198" rx="14" fill="#171717" stroke="#9a9a9a" stroke-width="1.5"/>
+  <circle cx="100" cy="78" r="34" fill="#2a2a2a"/>
+  <path d="M40 176c0-33 27-52 60-52s60 19 60 52z" fill="#2a2a2a"/>
+  <text x="100" y="150" font-family="ui-monospace, monospace" font-size="12" fill="#8a8a8a" text-anchor="middle">add real photo</text>
+</svg>

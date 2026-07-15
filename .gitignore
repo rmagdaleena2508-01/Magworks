@@ -1,0 +1,5 @@
+# local backups / intermediates — not needed in the published site
+index.old.html
+assets/hero-banner.orig.mp4
+assets/hero-banner-nonloop.mp4
+.DS_Store
