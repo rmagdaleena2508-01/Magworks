@@ -477,39 +477,114 @@ PROJECTS.forEach(p=>{
   pg.appendChild(card);
 });
 
-// ---- xylophone hover synth: each tech gets a unique pentatonic note ----
-let _actx;
-function audioCtx(){
-  if(!_actx){ try{ _actx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; } }
-  if(_actx.state==='suspended') _actx.resume();
-  return _actx;
-}
-// stable index per tech name (across all categories) so a tech always sounds the same
+// ---- SFX engine ----
+// Sounds are pre-rendered to WAV and played through <audio> media elements, so
+// they play on mobile even with the iOS ring/silent switch ON. (Pure Web Audio
+// synthesis is silenced by that switch; media playback is not.)
 const ALL_TECH = Object.values(STACK).flat().map(t=>t[0]);
 const NOTE_INDEX = Object.fromEntries(ALL_TECH.map((n,i)=>[n,i]));
-const PENTA = [0,2,4,7,9]; // C major pentatonic degrees (semitones)
-function freqFor(i){
-  const octave = Math.floor(i/PENTA.length);
-  const semis = PENTA[i%PENTA.length] + 12*octave;
-  return 261.63 * Math.pow(2, semis/12); // from C4 up
+const XY_BASE = 523.25; // C5 — pitch the xylophone sample is rendered at
+function xyloRate(i){
+  const steps=[0,2,4,7,9,12,14,16,19,21]; // C-major pentatonic across 2 octaves
+  return Math.pow(2, (steps[i%steps.length]-12)/12); // 0.5×–1.68× → natural pitch range
 }
-function playXylo(i){
-  const ctx = audioCtx(); if(!ctx) return;
-  const now = ctx.currentTime;
-  const f = freqFor(i);
-  const out = ctx.createGain();
-  out.gain.setValueAtTime(0.0001, now);
-  out.gain.exponentialRampToValueAtTime(0.5, now+0.005);
-  out.gain.exponentialRampToValueAtTime(0.0001, now+0.6);
-  out.connect(ctx.destination);
-  // fundamental + bright inharmonic partials = mallet/xylophone timbre
-  [[1,0.6,'sine'],[3.0,0.28,'sine'],[6.2,0.12,'triangle']].forEach(([mult,g,type])=>{
-    const o=ctx.createOscillator(); o.type=type; o.frequency.value=f*mult;
-    const og=ctx.createGain(); og.gain.value=g;
-    o.connect(og); og.connect(out);
-    o.start(now); o.stop(now+0.6);
+
+// AudioBuffer -> base64 WAV data URI
+function bufferToWavURI(buffer){
+  const ch=buffer.numberOfChannels, len=buffer.length, sr=buffer.sampleRate;
+  const blockAlign=ch*2, dataLen=len*blockAlign;
+  const ab=new ArrayBuffer(44+dataLen), dv=new DataView(ab); let o=0;
+  const w=s=>{for(let i=0;i<s.length;i++)dv.setUint8(o++,s.charCodeAt(i))};
+  const u32=v=>{dv.setUint32(o,v,true);o+=4}, u16=v=>{dv.setUint16(o,v,true);o+=2};
+  w('RIFF');u32(36+dataLen);w('WAVE');w('fmt ');u32(16);u16(1);u16(ch);u32(sr);u32(sr*blockAlign);u16(blockAlign);u16(16);w('data');u32(dataLen);
+  const data=[]; for(let c=0;c<ch;c++)data.push(buffer.getChannelData(c));
+  for(let i=0;i<len;i++)for(let c=0;c<ch;c++){let s=Math.max(-1,Math.min(1,data[c][i]));dv.setInt16(o,s<0?s*0x8000:s*0x7FFF,true);o+=2;}
+  let bin=''; const b=new Uint8Array(ab); for(let i=0;i<b.length;i++)bin+=String.fromCharCode(b[i]);
+  return 'data:audio/wav;base64,'+btoa(bin);
+}
+// render a recipe build(ctx,dest) offline to a WAV data URI
+function renderSound(seconds, build){
+  const OAC=window.OfflineAudioContext||window.webkitOfflineAudioContext;
+  if(!OAC) return Promise.resolve(null);
+  let oc; try{ oc=new OAC(1, Math.max(1,Math.ceil(44100*seconds)), 44100); }catch(e){ return Promise.resolve(null); }
+  try{ build(oc, oc.destination); }catch(e){ return Promise.resolve(null); }
+  const r=oc.startRendering();
+  return (r&&r.then)? r.then(bufferToWavURI).catch(()=>null)
+    : new Promise(res=>{ oc.oncomplete=e=>res(bufferToWavURI(e.renderedBuffer)); });
+}
+// sound recipes (same character as before)
+function buildXylo(ctx,dest){
+  const f=XY_BASE, out=ctx.createGain();
+  out.gain.setValueAtTime(0.0001,0); out.gain.exponentialRampToValueAtTime(0.7,0.005); out.gain.exponentialRampToValueAtTime(0.0001,0.6);
+  out.connect(dest);
+  [[1,0.6,'sine'],[3.0,0.28,'sine'],[6.2,0.12,'triangle']].forEach(([m,g,ty])=>{
+    const o=ctx.createOscillator(); o.type=ty; o.frequency.value=f*m;
+    const og=ctx.createGain(); og.gain.value=g; o.connect(og); og.connect(out); o.start(0); o.stop(0.6);
   });
 }
+function buildPop(ctx,dest){
+  const master=ctx.createGain(); master.gain.value=0.95; master.connect(dest);
+  const nb=ctx.createBuffer(1,Math.floor(ctx.sampleRate*0.1),ctx.sampleRate);
+  const d=nb.getChannelData(0); for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,3);
+  const noise=ctx.createBufferSource(); noise.buffer=nb;
+  const nf=ctx.createBiquadFilter(); nf.type='bandpass'; nf.frequency.value=1200; nf.Q.value=0.8;
+  const ng=ctx.createGain(); ng.gain.setValueAtTime(0.3,0); ng.gain.exponentialRampToValueAtTime(0.0001,0.09);
+  noise.connect(nf); nf.connect(ng); ng.connect(master); noise.start(0); noise.stop(0.1);
+  const o=ctx.createOscillator(); o.type='sine';
+  o.frequency.setValueAtTime(180,0); o.frequency.exponentialRampToValueAtTime(90,0.12);
+  const og=ctx.createGain(); og.gain.setValueAtTime(0.0001,0); og.gain.exponentialRampToValueAtTime(0.55,0.008); og.gain.exponentialRampToValueAtTime(0.0001,0.16);
+  o.connect(og); og.connect(master); o.start(0); o.stop(0.18);
+}
+function buildKnock(ctx,dest){
+  const master=ctx.createGain(); master.gain.value=0.95; master.connect(dest);
+  function knock(t,f){
+    const o=ctx.createOscillator(); o.type='triangle';
+    o.frequency.setValueAtTime(f*1.6,t); o.frequency.exponentialRampToValueAtTime(f,t+0.02);
+    const og=ctx.createGain(); og.gain.setValueAtTime(0.0001,t); og.gain.exponentialRampToValueAtTime(0.65,t+0.004); og.gain.exponentialRampToValueAtTime(0.0001,t+0.09);
+    o.connect(og); og.connect(master); o.start(t); o.stop(t+0.1);
+    const nb=ctx.createBuffer(1,Math.floor(ctx.sampleRate*0.03),ctx.sampleRate);
+    const d=nb.getChannelData(0); for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2);
+    const n=ctx.createBufferSource(); n.buffer=nb;
+    const bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=2000; bp.Q.value=1.2;
+    const ng=ctx.createGain(); ng.gain.setValueAtTime(0.42,t); ng.gain.exponentialRampToValueAtTime(0.0001,t+0.03);
+    n.connect(bp); bp.connect(ng); ng.connect(master); n.start(t); n.stop(t+0.04);
+  }
+  knock(0,200); knock(0.13,188);
+}
+
+// pooled <audio> players (media playback ignores the iOS mute switch)
+function makePool(uri, size){
+  if(!uri) return null;
+  const pool=[]; for(let i=0;i<size;i++){ const a=new Audio(uri); a.preload='auto'; a.playsInline=true;
+    try{a.preservesPitch=false;a.mozPreservesPitch=false;a.webkitPreservesPitch=false;}catch(e){} pool.push(a); }
+  let idx=0;
+  return { pool, play(rate,vol){ const a=pool[idx=(idx+1)%pool.length];
+    try{ a.pause(); a.currentTime=0; a.playbackRate=rate||1; a.volume=(vol==null?1:vol); const p=a.play(); if(p&&p.catch)p.catch(()=>{}); }catch(e){} } };
+}
+let xyloPool=null, popPool=null, knockPool=null;
+Promise.resolve()
+  .then(()=>renderSound(0.62, buildXylo)).then(u=>{ xyloPool=makePool(u,10); })
+  .then(()=>renderSound(0.30, buildPop)).then(u=>{ popPool=makePool(u,4); })
+  .then(()=>renderSound(0.35, buildKnock)).then(u=>{ knockPool=makePool(u,3); })
+  .catch(()=>{});
+
+function playXylo(i){ if(xyloPool) xyloPool.play(xyloRate(i), 0.9); }
+function playToggleSound(){ if(popPool) popPool.play(1,1); }
+function playAvatarSound(){ if(knockPool) knockPool.play(1,1); }
+
+// unlock the pooled audio on the first user gesture (iOS needs a gesture to allow play)
+let _audioUnlocked=false;
+function unlockAudio(){
+  if(_audioUnlocked) return;
+  const pools=[xyloPool,popPool,knockPool].filter(Boolean);
+  if(pools.length<3) return; // not rendered yet — try again on the next gesture
+  pools.forEach(pl=>pl.pool.forEach(a=>{ try{ a.muted=true; const p=a.play();
+    if(p&&p.then) p.then(()=>{a.pause();a.currentTime=0;a.muted=false;}).catch(()=>{a.muted=false;});
+    else { a.pause(); a.muted=false; } }catch(e){} }));
+  _audioUnlocked=true;
+}
+['touchstart','pointerdown','mousedown','click','keydown'].forEach(ev=>
+  document.addEventListener(ev, unlockAudio, {passive:true, capture:true}));
 
 // tech stack filters + pills
 const filtersEl=document.getElementById('filters');
@@ -551,21 +626,6 @@ if(marquee && track){
   marquee.style.cursor='pointer';
   marquee.addEventListener('click',()=>track.classList.toggle('paused'));
 }
-
-// unlock the audio engine on mobile: iOS needs a silent buffer played inside a
-// user gesture before any Web Audio sound will come through. Keep trying on early
-// interactions until the context is actually running.
-function unlockAudio(){
-  const ctx=audioCtx(); if(!ctx) return;
-  if(ctx.state==='running') return;
-  try{
-    const b=ctx.createBuffer(1,1,22050);
-    const s=ctx.createBufferSource(); s.buffer=b; s.connect(ctx.destination); s.start(0);
-  }catch(e){}
-  ctx.resume&&ctx.resume();
-}
-['touchstart','touchend','pointerdown','mousedown','click','keydown'].forEach(ev=>
-  document.addEventListener(ev, unlockAudio, {passive:true, capture:true}));
 
 // GitHub activity — real contributions rendered with GitHub's green scale (opacity by level)
 (function(){
@@ -612,56 +672,12 @@ if(heroVideo){
 /* ---------------- behavior ---------------- */
 // theme toggle (defaults to dark; light only when the user opts in)
 const themeBtn=document.getElementById('themeBtn');
-// soft "pop" click when the mode is toggled (reproduces Sam's toggle sound:
-// two short noise transients + low sine body, fast decay)
-function playToggleSound(){
-  const ctx=audioCtx(); if(!ctx) return;
-  const now=ctx.currentTime;
-  const master=ctx.createGain(); master.gain.value=0.9; master.connect(ctx.destination);
-  // noise transient (the "tick")
-  const nb=ctx.createBuffer(1, Math.floor(ctx.sampleRate*0.1), ctx.sampleRate);
-  const d=nb.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,3);
-  const noise=ctx.createBufferSource(); noise.buffer=nb;
-  const nf=ctx.createBiquadFilter(); nf.type='bandpass'; nf.frequency.value=1200; nf.Q.value=0.8;
-  const ng=ctx.createGain(); ng.gain.setValueAtTime(0.28,now); ng.gain.exponentialRampToValueAtTime(0.0001,now+0.09);
-  noise.connect(nf); nf.connect(ng); ng.connect(master); noise.start(now); noise.stop(now+0.1);
-  // sine body: quick pitch drop 180->90 Hz
-  const o=ctx.createOscillator(); o.type='sine';
-  o.frequency.setValueAtTime(180,now); o.frequency.exponentialRampToValueAtTime(90,now+0.12);
-  const og=ctx.createGain(); og.gain.setValueAtTime(0.0001,now); og.gain.exponentialRampToValueAtTime(0.5,now+0.008);
-  og.gain.exponentialRampToValueAtTime(0.0001,now+0.16);
-  o.connect(og); og.connect(master); o.start(now); o.stop(now+0.18);
-}
 themeBtn.onclick=()=>{
   document.documentElement.classList.toggle('light');
   try{ localStorage.setItem('theme', document.documentElement.classList.contains('light')?'light':'dark'); }catch(e){}
   playToggleSound();
 };
 
-// "knock on wood" — a double woody knock for the avatar (profile-photo) toggle
-function playAvatarSound(){
-  const ctx=audioCtx(); if(!ctx) return;
-  const now=ctx.currentTime;
-  const master=ctx.createGain(); master.gain.value=0.9; master.connect(ctx.destination);
-  function knock(t, f){
-    // woody resonant body: triangle with a quick pitch drop and very fast decay
-    const o=ctx.createOscillator(); o.type='triangle';
-    o.frequency.setValueAtTime(f*1.6, t); o.frequency.exponentialRampToValueAtTime(f, t+0.02);
-    const og=ctx.createGain();
-    og.gain.setValueAtTime(0.0001,t); og.gain.exponentialRampToValueAtTime(0.6,t+0.004);
-    og.gain.exponentialRampToValueAtTime(0.0001,t+0.09);
-    o.connect(og); og.connect(master); o.start(t); o.stop(t+0.1);
-    // sharp "tock" attack transient (short filtered noise)
-    const nb=ctx.createBuffer(1, Math.floor(ctx.sampleRate*0.03), ctx.sampleRate);
-    const d=nb.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2);
-    const n=ctx.createBufferSource(); n.buffer=nb;
-    const bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=2000; bp.Q.value=1.2;
-    const ng=ctx.createGain(); ng.gain.setValueAtTime(0.4,t); ng.gain.exponentialRampToValueAtTime(0.0001,t+0.03);
-    n.connect(bp); bp.connect(ng); ng.connect(master); n.start(t); n.stop(t+0.04);
-  }
-  knock(now, 200);         // knock —
-  knock(now+0.13, 188);    // knock
-}
 
 // avatar swap (contrast-circle) — flips between the illustration and a photo, like Sam's
 const pfpToggle=document.getElementById('pfpToggle');
