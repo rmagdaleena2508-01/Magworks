@@ -71,7 +71,7 @@
 
   /* ---- profile ---- */
   .profile{display:flex;gap:20px;align-items:flex-start}
-  .avatar{width:88px;height:88px;flex:none;border-radius:16px;border:1px solid var(--border-2);
+  .avatar{width:88px;height:88px;flex:none;border-radius:16px;border:1.5px solid #8a8a8a;
     background:linear-gradient(155deg,#2a3350,#141420);display:grid;place-items:center;position:relative;overflow:hidden}
   .avatar span{font-family:var(--serif);font-size:38px;color:var(--fg)}
   .avatar img{width:100%;height:100%;object-fit:cover;display:block;transition:opacity .25s ease}
@@ -161,9 +161,17 @@
   .pill img{width:14px;height:14px}
 
   /* ---- github activity ---- */
-  .ghwrap{border:1px solid var(--border);border-radius:var(--r);background:var(--card);padding:18px;overflow-x:auto}
-  .ghwrap img{filter:invert(1) hue-rotate(180deg) saturate(0) brightness(1.15) contrast(1.05);min-width:640px}
-  html.light .ghwrap img{filter:none;min-width:640px}
+  .ghwrap{border:1px solid var(--border);border-radius:var(--r);background:var(--card);padding:18px;overflow-x:auto;
+    --gh0:#161b22;--gh1:#0e4429;--gh2:#006d32;--gh3:#26a641;--gh4:#39d353}
+  html.light .ghwrap{--gh0:#ebedf0;--gh1:#9be9a8;--gh2:#40c463;--gh3:#30a14e;--gh4:#216e39}
+  .ghtotal{font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:12px}
+  .ghcal{display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,11px);grid-auto-columns:11px;gap:3px;width:max-content;min-width:640px}
+  .ghcell{width:11px;height:11px;border-radius:2px;background:var(--gh0)}
+  .ghcell.l1{background:var(--gh1)} .ghcell.l2{background:var(--gh2)}
+  .ghcell.l3{background:var(--gh3)} .ghcell.l4{background:var(--gh4)}
+  .ghlegend{display:flex;align-items:center;gap:3px;justify-content:flex-end;margin-top:12px;
+    font-family:var(--mono);font-size:10.5px;color:var(--muted-2)}
+  .ghlegend span{margin:0 4px}
   .ghlink{margin-top:10px;font-family:var(--mono);font-size:11.5px;color:var(--muted-2)}
   .ghlink a{color:var(--muted);text-decoration:underline;text-underline-offset:2px}
   .ghlink a:hover{color:var(--fg)}
@@ -173,6 +181,7 @@
     mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
   .mtrack{display:flex;gap:14px;width:max-content;animation:scroll 38s linear infinite}
   .marquee:hover .mtrack{animation-play-state:paused}
+  .mtrack.paused{animation-play-state:paused}
   @keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
   .tcard{width:320px;flex:none;border:1px solid var(--border);border-radius:var(--r);background:var(--card);padding:16px;position:relative}
   .tcard.hidden{display:none}
@@ -244,7 +253,7 @@
   <div class="row">
     <div class="row-inner">
       <div class="banner">
-        <video src="./assets/hero-banner.mp4" autoplay muted loop playsinline></video>
+        <video id="heroVideo" src="./assets/hero-banner.mp4" autoplay muted loop playsinline webkit-playsinline preload="auto" disablepictureinpicture disableremoteplayback></video>
       </div>
     </div>
   </div>
@@ -303,7 +312,9 @@
     <div class="row-inner rv">
       <h2 class="sec">GitHub Activity</h2>
       <div class="ghwrap">
-        <img src="https://ghchart.rshah.org/8fb3ff/rmagdaleena2508-01" alt="Magdaleena's GitHub contribution graph" loading="lazy" />
+        <div class="ghtotal" id="ghTotal">loading contributions…</div>
+        <div class="ghcal" id="ghCal"></div>
+        <div class="ghlegend"><span>Less</span><i class="ghcell"></i><i class="ghcell l1"></i><i class="ghcell l2"></i><i class="ghcell l3"></i><i class="ghcell l4"></i><span>More</span></div>
       </div>
       <div class="ghlink">live from <a href="https://github.com/rmagdaleena2508-01" target="_blank" rel="noopener">github.com/rmagdaleena2508-01</a></div>
     </div>
@@ -514,7 +525,9 @@ function renderPills(cat){
   items.forEach(([name,slug])=>{
     const p=el('span','pill');
     p.innerHTML = (slug?`<img src="${SI(slug)}" alt="" loading="lazy" onerror="this.remove()"/>`:'') + name;
-    p.addEventListener('mouseenter', ()=>playXylo(NOTE_INDEX[name] ?? 0));
+    const note=()=>playXylo(NOTE_INDEX[name] ?? 0);
+    p.addEventListener('mouseenter', note);   // desktop hover
+    p.addEventListener('click', note);        // mobile tap (+ desktop click)
     pillsEl.appendChild(p);
   });
 }
@@ -531,6 +544,58 @@ function tcard(t){
   return c;
 }
 [...TESTIMONIALS,...TESTIMONIALS].forEach(t=>track.appendChild(tcard(t)));
+
+// highlights marquee: tap/click toggles pause (works on mobile where there's no hover)
+const marquee=document.querySelector('.marquee');
+if(marquee && track){
+  marquee.style.cursor='pointer';
+  marquee.addEventListener('click',()=>track.classList.toggle('paused'));
+}
+
+// unlock the audio engine on the first touch so all sounds (xylophone + toggles) work on mobile
+['touchstart','pointerdown'].forEach(ev=>document.addEventListener(ev,function unlock(){ audioCtx(); document.removeEventListener(ev,unlock); },{passive:true}));
+
+// GitHub activity — real contributions rendered with GitHub's green scale (opacity by level)
+(function(){
+  const cal=document.getElementById('ghCal'), totalEl=document.getElementById('ghTotal');
+  if(!cal) return;
+  const user='rmagdaleena2508-01';
+  fetch(`https://github-contributions-api.jogruber.de/v4/${user}?y=last`)
+    .then(r=>r.json())
+    .then(data=>{
+      const days=(data.contributions||[]);
+      if(!days.length) throw new Error('no data');
+      let col=0;
+      days.forEach((d,i)=>{
+        const dow=new Date(d.date+'T00:00:00').getDay(); // 0=Sun..6=Sat
+        if(i>0 && dow===0) col++;
+        const cell=document.createElement('i');
+        const lvl=Math.max(0,Math.min(4, d.level|0));
+        cell.className='ghcell'+(lvl?(' l'+lvl):'');
+        cell.style.gridRow=(dow+1); cell.style.gridColumn=(col+1);
+        cell.title=`${d.count} contribution${d.count===1?'':'s'} on ${d.date}`;
+        cal.appendChild(cell);
+      });
+      const total=(data.total&&(data.total.lastYear??Object.values(data.total)[0]))||days.reduce((s,d)=>s+d.count,0);
+      if(totalEl) totalEl.textContent=`${total.toLocaleString()} contributions in the last year`;
+    })
+    .catch(()=>{ if(totalEl) totalEl.innerHTML='contribution graph unavailable — <a href="https://github.com/'+user+'" target="_blank" rel="noopener" style="text-decoration:underline">view on GitHub</a>'; });
+})();
+
+// hero banner: force muted inline autoplay + loop (kills the iOS play-button overlay)
+const heroVideo=document.getElementById('heroVideo');
+if(heroVideo){
+  heroVideo.muted=true; heroVideo.defaultMuted=true; heroVideo.loop=true;
+  heroVideo.setAttribute('muted','');
+  const tryPlay=()=>{ const p=heroVideo.play(); if(p&&p.catch) p.catch(()=>{}); };
+  tryPlay();
+  heroVideo.addEventListener('loadedmetadata',tryPlay);
+  heroVideo.addEventListener('canplay',tryPlay);
+  // last-resort: resume on the first user interaction if the browser blocked autoplay
+  const kick=()=>{ tryPlay(); document.removeEventListener('touchstart',kick); document.removeEventListener('click',kick); };
+  document.addEventListener('touchstart',kick,{passive:true,once:true});
+  document.addEventListener('click',kick,{once:true});
+}
 
 /* ---------------- behavior ---------------- */
 // theme toggle (defaults to dark; light only when the user opts in)
@@ -561,22 +626,29 @@ themeBtn.onclick=()=>{
   playToggleSound();
 };
 
-// soft two-note chime for the avatar (profile-photo) toggle — airier than the mode pop
-function playAvatarSound(up){
+// "knock on wood" — a double woody knock for the avatar (profile-photo) toggle
+function playAvatarSound(){
   const ctx=audioCtx(); if(!ctx) return;
   const now=ctx.currentTime;
-  const master=ctx.createGain(); master.gain.value=0.5; master.connect(ctx.destination);
-  // gentle ascending (or descending) pair of soft triangle tones with reverb-ish tail
-  const notes = up ? [659.25, 987.77] : [987.77, 659.25]; // E5 -> B5 (or reverse)
-  notes.forEach((f,i)=>{
-    const t=now+i*0.075;
-    const o=ctx.createOscillator(); o.type='triangle'; o.frequency.value=f;
-    const g=ctx.createGain();
-    g.gain.setValueAtTime(0.0001,t);
-    g.gain.exponentialRampToValueAtTime(0.32,t+0.02);
-    g.gain.exponentialRampToValueAtTime(0.0001,t+0.5);
-    o.connect(g); g.connect(master); o.start(t); o.stop(t+0.55);
-  });
+  const master=ctx.createGain(); master.gain.value=0.9; master.connect(ctx.destination);
+  function knock(t, f){
+    // woody resonant body: triangle with a quick pitch drop and very fast decay
+    const o=ctx.createOscillator(); o.type='triangle';
+    o.frequency.setValueAtTime(f*1.6, t); o.frequency.exponentialRampToValueAtTime(f, t+0.02);
+    const og=ctx.createGain();
+    og.gain.setValueAtTime(0.0001,t); og.gain.exponentialRampToValueAtTime(0.6,t+0.004);
+    og.gain.exponentialRampToValueAtTime(0.0001,t+0.09);
+    o.connect(og); og.connect(master); o.start(t); o.stop(t+0.1);
+    // sharp "tock" attack transient (short filtered noise)
+    const nb=ctx.createBuffer(1, Math.floor(ctx.sampleRate*0.03), ctx.sampleRate);
+    const d=nb.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2);
+    const n=ctx.createBufferSource(); n.buffer=nb;
+    const bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=2000; bp.Q.value=1.2;
+    const ng=ctx.createGain(); ng.gain.setValueAtTime(0.4,t); ng.gain.exponentialRampToValueAtTime(0.0001,t+0.03);
+    n.connect(bp); bp.connect(ng); ng.connect(master); n.start(t); n.stop(t+0.04);
+  }
+  knock(now, 200);         // knock —
+  knock(now+0.13, 188);    // knock
 }
 
 // avatar swap (contrast-circle) — flips between the illustration and a photo, like Sam's
