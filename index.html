@@ -552,8 +552,20 @@ if(marquee && track){
   marquee.addEventListener('click',()=>track.classList.toggle('paused'));
 }
 
-// unlock the audio engine on the first touch so all sounds (xylophone + toggles) work on mobile
-['touchstart','pointerdown'].forEach(ev=>document.addEventListener(ev,function unlock(){ audioCtx(); document.removeEventListener(ev,unlock); },{passive:true}));
+// unlock the audio engine on mobile: iOS needs a silent buffer played inside a
+// user gesture before any Web Audio sound will come through. Keep trying on early
+// interactions until the context is actually running.
+function unlockAudio(){
+  const ctx=audioCtx(); if(!ctx) return;
+  if(ctx.state==='running') return;
+  try{
+    const b=ctx.createBuffer(1,1,22050);
+    const s=ctx.createBufferSource(); s.buffer=b; s.connect(ctx.destination); s.start(0);
+  }catch(e){}
+  ctx.resume&&ctx.resume();
+}
+['touchstart','touchend','pointerdown','mousedown','click','keydown'].forEach(ev=>
+  document.addEventListener(ev, unlockAudio, {passive:true, capture:true}));
 
 // GitHub activity — real contributions rendered with GitHub's green scale (opacity by level)
 (function(){
