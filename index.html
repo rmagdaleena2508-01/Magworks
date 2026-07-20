@@ -187,7 +187,11 @@
   @keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
   .tcard{width:320px;flex:none;border:1px solid var(--border);border-radius:var(--r);background:var(--card);padding:16px;position:relative}
   .tcard.hidden{display:none}
-  .thead{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .tlink{position:absolute;top:12px;right:12px;width:24px;height:24px;display:grid;place-items:center;
+    border-radius:6px;color:var(--muted-2);transition:color .2s,background .2s}
+  .tlink:hover{color:#0a66c2;background:var(--card-2)}
+  .tlink svg{width:15px;height:15px}
+  .thead{display:flex;align-items:center;gap:10px;margin-bottom:10px;padding-right:22px}
   .tavatar{width:34px;height:34px;border-radius:50%;flex:none;display:grid;place-items:center;font-family:var(--serif);font-size:15px;color:#fff}
   .tname{font-size:13px;font-weight:600;display:flex;align-items:center;gap:5px}
   .trole{font-size:11px;color:var(--muted-2)}
@@ -422,13 +426,16 @@ const TESTIMONIALS = [
     src:'LinkedIn recommendation · Jun 1, 2026 · managed Magdaleena directly' },
   { name:'Ravi Kumar Gupta', role:'GSSoC Project Admin', init:'R', color:'#38bdf8',
     quote:'Highly adaptive to feedback, consistently improving her approach after every review cycle — a quick learner who actively works on her craft.',
-    src:'LinkedIn recommendation · May 10, 2026 · mentored Magdaleena at GSSoC' },
+    src:'LinkedIn recommendation · May 10, 2026 · mentored Magdaleena at GSSoC',
+    linkedin:'https://www.linkedin.com/in/edward7780/' },
   { name:'Venumadhavan', role:'Co-founder, Upstride', init:'V', color:'#f472b6',
     quote:"All the things you're doing seriously amaze me. Your hard work and commitment towards posting and engaging are commendable.",
-    src:'WhatsApp message' },
+    src:'WhatsApp message',
+    linkedin:'https://www.linkedin.com/in/venu-madhavan-cs-860a692a5/' },
   { name:'Senthilnathan T', role:'AI + ML · IIT Madras', init:'S', color:'#a78bfa',
     quote:'Just wanted to drop by and say that you have got a really cool profile (that too for a freshie)! Keep up the awesome work and my best wishes for your future!!',
-    src:'LinkedIn message' },
+    src:'LinkedIn message',
+    linkedin:'https://www.linkedin.com/in/senthilnathan-t/' },
 ];
 
 /* ---------------- render helpers ---------------- */
@@ -619,7 +626,8 @@ renderPills('all');
 const track=document.getElementById('mtrack');
 function tcard(t){
   const c=el('div','tcard');
-  c.innerHTML=`<div class="thead"><span class="tavatar" style="background:${t.color}">${t.init}</span>
+  c.innerHTML=`${t.linkedin?`<a class="tlink" href="${t.linkedin}" target="_blank" rel="noopener" aria-label="${t.name} on LinkedIn" title="View ${t.name} on LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.35V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0z"/></svg></a>`:''}
+    <div class="thead"><span class="tavatar" style="background:${t.color}">${t.init}</span>
       <div><div class="tname">${t.name}</div><div class="trole">${t.role}</div></div></div>
     <div class="tquote">"${t.quote}"</div>
     <div class="tsrc">${t.src}</div>`;
