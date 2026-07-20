@@ -693,13 +693,29 @@ function mStopAndStep(dir){
   mStopped=true; marqueeWrap.classList.add('stopped');
   requestAnimationFrame(()=>{ centerTo(mP,true); wrapAfter(); });
 }
-function mStep(dir){ mP+=dir; centerTo(mP,true); wrapAfter(); }
-function mResume(){ track.style.transition=''; track.style.animation=''; track.style.transform=''; mStopped=false; marqueeWrap.classList.remove('stopped'); }
+function mStep(dir){ mP+=dir; centerTo(mP,true); wrapAfter(); scheduleResume(); }
+// resume the auto-scroll smoothly, continuing from the current position (no jump back to start)
+function mResume(){
+  clearTimeout(mIdleTimer);
+  if(!mStopped) return;
+  mMeasure();
+  const oneSet=track.scrollWidth/3;                 // width of one card set (track has 3)
+  let nx=mReadX()%oneSet; if(nx>0) nx-=oneSet;       // normalise into (-oneSet, 0]
+  const dur=38, frac=(-nx)/oneSet;                   // how far through the 38s loop this position is
+  track.style.transition='none'; track.style.transform=''; track.style.animation='none';
+  void track.offsetWidth;                            // reflow so the animation restart takes effect
+  track.style.animation=`scroll ${dur}s linear infinite`;
+  track.style.animationDelay=`-${(frac*dur).toFixed(3)}s`;
+  mStopped=false; marqueeWrap.classList.remove('stopped');
+}
+// after the viewer stops clicking the arrows, go back to rotating on its own
+let mIdleTimer=null;
+function scheduleResume(){ clearTimeout(mIdleTimer); mIdleTimer=setTimeout(mResume, 4000); }
 if(marquee && track && marqueeWrap){
   marquee.style.cursor='pointer';
-  marquee.addEventListener('click',()=>{ if(mStopped) mResume(); else mStopAndStep(0); });  // tap card area toggles stop/resume
-  mPrev.addEventListener('click',e=>{ e.stopPropagation(); mStopped?mStep(-1):mStopAndStep(-1); });
-  mNext.addEventListener('click',e=>{ e.stopPropagation(); mStopped?mStep(1):mStopAndStep(1); });
+  marquee.addEventListener('click',()=>{ if(mStopped) mResume(); else { mStopAndStep(0); scheduleResume(); } });
+  mPrev.addEventListener('click',e=>{ e.stopPropagation(); mStopped?mStep(-1):mStopAndStep(-1); scheduleResume(); });
+  mNext.addEventListener('click',e=>{ e.stopPropagation(); mStopped?mStep(1):mStopAndStep(1); scheduleResume(); });
   addEventListener('resize',()=>{ if(mStopped){ mMeasure(); centerTo(mP,false); } });
 }
 
