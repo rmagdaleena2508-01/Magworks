@@ -4,6 +4,7 @@ A dark, single-page portfolio for an AI engineer. Static site — no build step,
 just `index.html` + `contact.html` + `assets/` (HTML, CSS, and vanilla JS).
 
 **Live:** https://rmagdaleena2508-01.github.io/Magworks/
+
 **vercel:** https://magworks.vercel.app/
 
 ## Run locally
