@@ -185,17 +185,16 @@
   .marquee:hover .mtrack{animation-play-state:paused}
   .mtrack.paused{animation-play-state:paused}
   .marquee-wrap{position:relative}
-  .mnav-btn{position:absolute;top:50%;transform:translateY(-50%) scale(.85);z-index:6;
+  .mnav-btn{position:absolute;top:50%;transform:translateY(-50%);z-index:6;
     width:38px;height:38px;display:grid;place-items:center;border-radius:50%;
     background:var(--card);border:1px solid var(--border-2);color:var(--fg);cursor:pointer;
-    box-shadow:0 6px 18px rgba(0,0,0,.4);opacity:0;pointer-events:none;
-    transition:opacity .25s ease,transform .25s ease,background .2s}
-  .mnav-btn.prev{left:-6px} .mnav-btn.next{right:-6px}
+    box-shadow:0 6px 18px rgba(0,0,0,.4);opacity:.85;transition:opacity .2s,transform .15s,background .2s}
+  .mnav-btn.prev{left:-8px} .mnav-btn.next{right:-8px}
   .mnav-btn svg{width:17px;height:17px}
-  .mnav-btn:hover{background:var(--card-2)}
-  .marquee-wrap.stopped .mnav-btn{opacity:1;pointer-events:auto;transform:translateY(-50%) scale(1)}
-  @media(max-width:640px){.mnav-btn{width:34px;height:34px}.mnav-btn.prev{left:-4px}.mnav-btn.next{right:-4px}}
-  @keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  .mnav-btn:hover{background:var(--card-2);opacity:1}
+  .mnav-btn:active{transform:translateY(-50%) scale(.9)}
+  @media(max-width:640px){.mnav-btn{width:34px;height:34px}.mnav-btn.prev{left:-6px}.mnav-btn.next{right:-6px}}
+  @keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-33.3333%)}}
   .tcard{width:320px;flex:none;border:1px solid var(--border);border-radius:var(--r);background:var(--card);padding:16px;position:relative}
   .tcard.hidden{display:none}
   .tlink{position:absolute;top:12px;right:12px;width:24px;height:24px;display:grid;place-items:center;
@@ -653,24 +652,55 @@ function tcard(t){
     <div class="tsrc">${t.src}</div>`;
   return c;
 }
-[...TESTIMONIALS,...TESTIMONIALS].forEach(t=>track.appendChild(tcard(t)));
+[...TESTIMONIALS,...TESTIMONIALS,...TESTIMONIALS].forEach(t=>track.appendChild(tcard(t)));
 
-// highlights marquee: tap/click stops the auto-scroll and reveals ‹ › arrows to step manually
+// highlights: rotates by default; ‹ › arrows stop it and snap ONE card centered, then step card-by-card
 const marquee=document.querySelector('.marquee');
 const marqueeWrap=document.getElementById('marqueeWrap');
 const mPrev=document.getElementById('mPrev'), mNext=document.getElementById('mNext');
-let mStopped=false, mX=0;
+const N_HL=TESTIMONIALS.length;            // unique cards; track holds 3×N (middle set is the "stage")
+let mStopped=false, mP=N_HL, cardW=320, gap=14, step=334, viewW=800;
+function mMeasure(){
+  const c=track.querySelector('.tcard');
+  cardW=c?c.getBoundingClientRect().width:320;
+  gap=parseFloat(getComputedStyle(track).gap)||14;
+  step=cardW+gap;
+  viewW=marquee.clientWidth||800;
+}
 function mReadX(){ try{ return new DOMMatrixReadOnly(getComputedStyle(track).transform).m41; }catch(e){ return 0; } }
-function mSetW(){ return track.scrollWidth/2; }            // one full (un-duplicated) set width
-function mStep(){ const c=track.querySelector('.tcard'); const g=parseFloat(getComputedStyle(track).gap)||14; return (c?c.getBoundingClientRect().width:320)+g; }
-function mStop(){ mX=mReadX(); track.style.animation='none'; track.style.transition='none'; track.style.transform=`translateX(${mX}px)`; mStopped=true; marqueeWrap.classList.add('stopped'); }
+function centerX(p){ return viewW/2 - (p*step + cardW/2); }   // translateX that centers card #p
+function centerTo(p, animate){
+  track.style.animation='none';
+  track.style.transition=animate?'transform .45s cubic-bezier(.16,1,.3,1)':'none';
+  track.style.transform=`translateX(${centerX(p)}px)`;
+}
+// keep the centered index inside the middle set [N, 2N) so both neighbours always peek
+function wrapAfter(){
+  setTimeout(()=>{
+    let np=mP;
+    if(mP>=2*N_HL) np=mP-N_HL;
+    else if(mP<N_HL) np=mP+N_HL;
+    if(np!==mP){ mP=np; centerTo(mP,false); }
+  }, 480);
+}
+function mStopAndStep(dir){
+  mMeasure();
+  // freeze exactly where the auto-scroll is, then glide to the nearest centered card (+ the clicked step)
+  const x=mReadX();
+  track.style.animation='none'; track.style.transition='none'; track.style.transform=`translateX(${x}px)`;
+  let idx=Math.round((viewW/2 - x - cardW/2)/step);   // card currently nearest the centre
+  mP=((idx%N_HL)+N_HL)%N_HL + N_HL + (dir||0);         // normalise into the middle set, apply direction
+  mStopped=true; marqueeWrap.classList.add('stopped');
+  requestAnimationFrame(()=>{ centerTo(mP,true); wrapAfter(); });
+}
+function mStep(dir){ mP+=dir; centerTo(mP,true); wrapAfter(); }
 function mResume(){ track.style.transition=''; track.style.animation=''; track.style.transform=''; mStopped=false; marqueeWrap.classList.remove('stopped'); }
-function mMove(dir){ const w=mSetW(); mX-=dir*mStep(); if(mX<=-w) mX+=w; if(mX>0) mX-=w; track.style.transition='transform .4s cubic-bezier(.16,1,.3,1)'; track.style.transform=`translateX(${mX}px)`; }
 if(marquee && track && marqueeWrap){
   marquee.style.cursor='pointer';
-  marquee.addEventListener('click',()=>{ mStopped?mResume():mStop(); });
-  mPrev.addEventListener('click',e=>{ e.stopPropagation(); if(!mStopped) mStop(); mMove(-1); });
-  mNext.addEventListener('click',e=>{ e.stopPropagation(); if(!mStopped) mStop(); mMove(1); });
+  marquee.addEventListener('click',()=>{ if(mStopped) mResume(); else mStopAndStep(0); });  // tap card area toggles stop/resume
+  mPrev.addEventListener('click',e=>{ e.stopPropagation(); mStopped?mStep(-1):mStopAndStep(-1); });
+  mNext.addEventListener('click',e=>{ e.stopPropagation(); mStopped?mStep(1):mStopAndStep(1); });
+  addEventListener('resize',()=>{ if(mStopped){ mMeasure(); centerTo(mP,false); } });
 }
 
 // GitHub activity — real contributions rendered with GitHub's green scale (opacity by level)
