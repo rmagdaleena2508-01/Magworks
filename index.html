@@ -485,18 +485,18 @@ let ri=0; const roleEl=document.getElementById('roleText');
 setInterval(()=>{ ri=(ri+1)%ROLES.length; roleEl.style.opacity=0; setTimeout(()=>{ roleEl.textContent=ROLES[ri]; roleEl.style.opacity=1; },250); },3200);
 roleEl.style.transition='opacity .25s';
 
-// view counter — real cross-visitor count via CounterAPI (falls back to local if offline)
+// view counter — ONE shared cross-device count via Abacus (returns {value:N}).
+// Same total on laptop and mobile; never shows NaN (guards a bad/failed response).
 (function views(){
   const out = document.getElementById('viewCount');
-  fetch('https://api.counterapi.dev/v1/magdaleena-portfolio/hero-views/up')
+  if(!out) return;
+  fetch('https://abacus.jasoncameron.dev/hit/magworks-mag/site-views')
     .then(r=>r.json())
-    .then(d=>{ out.textContent = Number(d.count).toLocaleString(); })
-    .catch(()=>{
-      const key='mg_views_fallback';
-      let n = parseInt(localStorage.getItem(key)||'0',10) + 1;
-      localStorage.setItem(key,n);
-      out.textContent = n.toLocaleString();
-    });
+    .then(d=>{
+      const n = Number(d && d.value);
+      out.textContent = Number.isFinite(n) ? n.toLocaleString() : '—';
+    })
+    .catch(()=>{ out.textContent = '—'; });
 })();
 
 // contact icons
