@@ -110,19 +110,15 @@
   @media(prefers-reduced-motion:reduce){.js .rv{opacity:1;transform:none}}
   /* progressive blur under the fixed nav (top edge) + bottom edge — mobile + laptop */
   .scroll-blur{position:fixed;top:0;left:0;right:0;height:104px;z-index:95;pointer-events:none}
-  .scroll-blur-b{position:fixed;bottom:0;left:0;right:0;height:104px;z-index:95;pointer-events:none}
-  .scroll-blur>div,.scroll-blur-b>div{position:absolute;inset:0;
+  .scroll-blur>div{position:absolute;inset:0;
     -webkit-backdrop-filter:blur(var(--b));backdrop-filter:blur(var(--b))}
   .scroll-blur>div{-webkit-mask-image:linear-gradient(to bottom,#000 0,#000 var(--m),transparent calc(var(--m) + 12%));
     mask-image:linear-gradient(to bottom,#000 0,#000 var(--m),transparent calc(var(--m) + 12%))}
-  .scroll-blur-b>div{-webkit-mask-image:linear-gradient(to top,#000 0,#000 var(--m),transparent calc(var(--m) + 12%));
-    mask-image:linear-gradient(to top,#000 0,#000 var(--m),transparent calc(var(--m) + 12%))}
 </style>
 </head>
 <body>
 
 <div class="scroll-blur" aria-hidden="true"><div style="--b:1px;--m:88%"></div><div style="--b:2px;--m:72%"></div><div style="--b:4px;--m:56%"></div><div style="--b:8px;--m:40%"></div><div style="--b:16px;--m:24%"></div><div style="--b:28px;--m:10%"></div></div>
-<div class="scroll-blur-b" aria-hidden="true"><div style="--b:1px;--m:88%"></div><div style="--b:2px;--m:72%"></div><div style="--b:4px;--m:56%"></div><div style="--b:8px;--m:40%"></div><div style="--b:16px;--m:24%"></div><div style="--b:28px;--m:10%"></div></div>
 
 <header>
   <div class="nav-inner">
