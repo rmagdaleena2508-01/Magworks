@@ -289,6 +289,7 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
   @media(max-width:560px){.nowbar{border-radius:14px}}
 
   /* ---- active nav link ---- */
+  #about,#contact,#projects,#stack{scroll-margin-top:64px}
   .nav-links{position:relative}
   .nav-links a.active{color:var(--fg)}
   .nav-ind{position:absolute;bottom:2px;left:0;height:1.5px;width:0;border-radius:2px;background:var(--accent);
@@ -954,9 +955,20 @@ function setActiveLink(href){
   navLinks.forEach(a=>{ const on=a.getAttribute('href')===href; a.classList.toggle('active',on); if(on) active=a; });
   moveInd(active);
 }
+// scroll-spy anchored just below the fixed header, so short sections (like Contact)
+// still win over the taller section beneath them instead of being skipped.
 const SPY={about:'#top',contact:'#contact',projects:'#projects',stack:'#stack'};
-const spy=new IntersectionObserver(es=>{es.forEach(e=>{ if(e.isIntersecting) setActiveLink(SPY[e.target.id]); });},{rootMargin:'-30% 0px -62% 0px',threshold:0});
-Object.keys(SPY).forEach(id=>{const s=document.getElementById(id); if(s) spy.observe(s);});
+const spyEls=Object.keys(SPY).map(id=>document.getElementById(id)).filter(Boolean);
+function updateSpy(){
+  const line=90; // px from top — just under the ~52px sticky nav
+  let cur=null;
+  for(const el of spyEls){ if(el.getBoundingClientRect().top-line<=0) cur=el; }
+  setActiveLink(cur?SPY[cur.id]:'#top');
+}
+let spyRaf=0;
+addEventListener('scroll',()=>{ if(!spyRaf) spyRaf=requestAnimationFrame(()=>{ updateSpy(); spyRaf=0; }); },{passive:true});
+addEventListener('resize',updateSpy);
+updateSpy();
 // place the underline under Home immediately, without an entry-slide
 if(navInd){ navInd.style.transition='none'; setActiveLink('#top'); requestAnimationFrame(()=>{ navInd.style.transition=''; }); }
 addEventListener('resize',()=>{ const a=document.querySelector('.nav-links a.active'); if(a){ const t=navInd.style.transition; navInd.style.transition='none'; moveInd(a); void navInd.offsetWidth; navInd.style.transition=t; } });
