@@ -300,17 +300,19 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
   .pgrid{perspective:1000px}
   .pcard{transform-style:preserve-3d}
   .pill{position:relative}
-  .pill .tip{position:absolute;bottom:calc(100% + 9px);left:50%;transform:translateX(-50%) translateY(4px);
-    width:196px;background:var(--card-2);border:1px solid var(--border-2);border-radius:10px;padding:10px 12px;
+  .pill.tapped{border-color:var(--border-2);color:var(--fg)}
+  /* one shared tooltip, positioned + clamped to the viewport in JS (never off-screen) */
+  .techtip{position:fixed;left:0;top:0;width:196px;max-width:calc(100vw - 16px);
+    background:var(--card-2);border:1px solid var(--border-2);border-radius:10px;padding:10px 12px;
     font-family:var(--sans);font-size:11.5px;line-height:1.45;color:var(--muted);text-align:left;white-space:normal;
-    box-shadow:0 14px 30px -12px rgba(0,0,0,.6);opacity:0;pointer-events:none;z-index:60;
-    transition:opacity .16s ease,transform .16s ease}
-  .pill:hover .tip,.pill:focus-visible .tip{opacity:1;transform:translateX(-50%) translateY(0)}
-  .pill .tip .tcat{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-2);margin-bottom:5px}
-  .pill .tip b{color:var(--fg);font-weight:600}
-  .pill .tip .bar{margin-top:8px;height:4px;border-radius:3px;background:var(--border);overflow:hidden}
-  .pill .tip .bar>i{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,var(--accent),#c7a6ff)}
-  .pill .tip .barlbl{display:block;margin-top:5px;font-family:var(--mono);font-size:9px;letter-spacing:.04em;color:var(--muted-2)}
+    box-shadow:0 14px 30px -12px rgba(0,0,0,.6);opacity:0;pointer-events:none;z-index:130;
+    transform:translateY(4px);transition:opacity .16s ease,transform .16s ease}
+  .techtip.show{opacity:1;transform:translateY(0)}
+  .techtip .tcat{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-2);margin-bottom:5px}
+  .techtip b{color:var(--fg);font-weight:600}
+  .techtip .bar{margin-top:8px;height:4px;border-radius:3px;background:var(--border);overflow:hidden}
+  .techtip .bar>i{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,var(--accent),#c7a6ff)}
+  .techtip .barlbl{display:block;margin-top:5px;font-family:var(--mono);font-size:9px;letter-spacing:.04em;color:var(--muted-2)}
 
   /* ---- command palette (⌘K) ---- */
   .cmdk-open{width:auto;padding:0 9px;font-family:var(--mono);font-size:11px}
@@ -743,16 +745,49 @@ function techTip(name){
   } else {
     body=`In my ${CAT_DESC[cat].toLowerCase()} toolkit`;
   }
-  return `<span class="tip"><span class="tcat">${CAT_DESC[cat]}</span>${body}</span>`;
+  return `<span class="tcat">${CAT_DESC[cat]}</span>${body}`;
 }
+// one shared tooltip element, positioned + clamped to the viewport on show
+const techtip=el('div','techtip'); techtip.setAttribute('aria-hidden','true'); document.body.appendChild(techtip);
+const COARSE = matchMedia('(hover:none)').matches || !matchMedia('(hover:hover)').matches;
+let tipFor=null;
+function showTip(pill){
+  techtip.innerHTML = pill._tip;
+  techtip.classList.add('show');
+  const r=pill.getBoundingClientRect();
+  const tw=techtip.offsetWidth, th=techtip.offsetHeight, m=8;
+  let left=r.left + r.width/2 - tw/2;
+  left=Math.max(m, Math.min(left, innerWidth - m - tw));   // keep inside the screen
+  let top=r.top - th - 9;
+  if(top < m) top=r.bottom + 9;                            // no room above -> show below
+  techtip.style.left=left+'px'; techtip.style.top=top+'px';
+  if(tipFor && tipFor!==pill) tipFor.classList.remove('tapped');
+  tipFor=pill;
+}
+function hideTip(){ techtip.classList.remove('show'); if(tipFor){ tipFor.classList.remove('tapped'); tipFor=null; } }
+addEventListener('scroll',hideTip,{passive:true});
+addEventListener('resize',hideTip);
+document.addEventListener('click',e=>{ if(!e.target.closest('.pill')) hideTip(); });
 function renderPills(cat){
   pillsEl.innerHTML='';
+  hideTip();
   const items = cat==='all' ? Object.values(STACK).flat() : STACK[cat];
   items.forEach(([name,slug])=>{
     const p=el('span','pill'); p.tabIndex=0;
     const icon = ICONS[name] ? `<span class="pill-ic">${ICONS[name]}</span>`
       : (slug ? `<img src="${SI(slug)}" alt="" loading="lazy" onerror="this.remove()"/>` : '');
-    p.innerHTML = icon + name + techTip(name);
+    p.innerHTML = icon + name;
+    p._tip = techTip(name);
+    if(COARSE){
+      // touch: tap toggles the tooltip
+      p.addEventListener('click',e=>{ e.stopPropagation();
+        if(tipFor===p){ hideTip(); } else { p.classList.add('tapped'); showTip(p); } });
+    } else {
+      p.addEventListener('mouseenter',()=>showTip(p));
+      p.addEventListener('mouseleave',hideTip);
+      p.addEventListener('focus',()=>showTip(p));
+      p.addEventListener('blur',hideTip);
+    }
     pillsEl.appendChild(p);
   });
 }
