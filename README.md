@@ -1,6 +1,6 @@
 # Magworks — Magdaleena's Portfolio
 
-A dark, single-page portfolio for an AI / frontend engineer. It is a **static site with no build step** — just plain HTML, CSS, and vanilla JavaScript plus a few files in `assets/`. Everything server-like (contact form, view counter, GitHub graph) is handled by free third-party APIs called from the browser.
+A dark, single-page portfolio for an AI / frontend engineer. It is a **static site with no build step** — just plain HTML, CSS, and vanilla JavaScript plus a few files in `assets/`. Everything server-like (contact form, GitHub graph) is handled by free third-party APIs called from the browser.
 
 - **Live (GitHub Pages):** https://rmagdaleena2508-01.github.io/Magworks/
 - **Live (Vercel):** https://magworks.vercel.app/
@@ -44,31 +44,43 @@ The portfolio started as a plain static page. Over the course of development it 
 - Projects: CubeSight, CSI SRMIST VDP, Financial Advisory Agents, ProblemBase — each with a one-line summary, live/repo links, and tech tags.
 
 ### Profile & interactions
-- **Rotating job title** (AI Frontend Engineer / Software Engineer / Multi-Agent Systems Builder) with per-role dwell timing.
-- **Avatar toggle** — a small day/night circle that swaps between an illustration and a real photo.
-- **Live view counter** next to the name.
+- **Job title** — a single, clear title ("Software Engineer") under the name.
+- **Avatar** — one illustrated profile image (the old photo-swap toggle and the extra photo were removed to keep it simple).
+- **"Now" strip** — one short line under the profile that says what Magdaleena is doing right now (interning, building, learning). It is meant to be edited about once a month.
 
 ### Theme toggle
 - Rebuilt the light/dark toggle to use the **View Transitions API** for a smooth single-corner circular reveal that fills the page (GPU-composited, no latency), with a sun/moon icon morph. *Why:* the plain instant flip felt abrupt; the reveal is smooth and works across all pages. Falls back to an instant toggle where unsupported or when reduced-motion is set. The site **always opens in dark mode** by default.
 
 ### Sound design
-- Subtle **sound effects**: a xylophone note on each tech-stack pill (hover on desktop, tap on mobile), a soft "pop" on the theme toggle, and a knock on the avatar toggle.
-- *Why the rewrites:* sounds are synthesized live with the **Web Audio API** for near-zero latency. To keep them audible on iOS even with the ring/silent switch on, a short silent looping media element flips the audio session to "playback" on first touch.
+- A soft "pop" plays on the theme toggle, made live with the **Web Audio API**. (The tech-stack pills used to play a note too — that was swapped for a helpful tooltip instead, see below.)
 
 ### Motion & effects
 - **Mobile navigation — paper fold.** *What:* the mobile menu (the ☰ button) opens and closes with a vertical "paper-fold" animation instead of an abrupt show/hide. *Where:* the `.mnav` panel and its links in the injected `mnavStyle` block plus a small JS controller in each page's script (`index.html`, `contact.html`, `writing.html`). *How:* the panel is a `rotateX(-90deg → 0)` fold from a top `transform-origin` with `perspective` on the header; the links unfold in a staggered sequence. Open folds top→bottom (ascending `transition-delay`); close folds bottom→top (a `.closing` class with reversed delays). Height is driven to the exact `scrollHeight` in JS so there is no max-height overshoot. The menu itself is a **grey-black liquid-glass** surface (translucent background + `backdrop-filter: blur() saturate()`, hairline border, inset highlight).
 - **Progressive scroll blur.** *What:* content blurs gradually as it passes behind the fixed nav at the top edge, on both laptop and mobile. *Where:* the `.scroll-blur` fixed overlay at the top of `<body>` in each page, styled in the same `<style>` block. *How:* the overlay stacks six layers, every layer a full-width `backdrop-filter: blur()` with an increasing blur (1 → 28px) and a `mask-image` linear-gradient that reveals a progressively smaller band toward the top edge — the overlapping masked layers add up to a smooth progressive (graduated) blur rather than a single hard blur.
 - **Always land on the hero.** *What:* every visit and reload starts at the top (hero), regardless of where a previous visitor scrolled. *Where:* the inline script in `index.html`'s `<head>`. *How:* `history.scrollRestoration = 'manual'` disables the browser's scroll restore, and `scrollTo(0,0)` is forced on `DOMContentLoaded`, `load`, and `pageshow` (the last covers the back/forward bfcache).
 
+### What makes it interactive (in plain words)
+
+The page used to just sit there. We added small things that answer back when you move, scroll, or type — so it feels alive without being noisy or playing sound. Here is each one, why we added it, how it works, and the idea behind it.
+
+- **A "Now" line under the photo.** *Why:* it shows the person is busy and real right now, not frozen in time. *How:* it is one line of text in the page that you edit by hand every month. A tiny green dot next to it gently blinks. *Idea we followed:* small, honest, and easy to keep fresh.
+- **Tech pills that explain themselves.** *Why:* a logo alone does not tell you how much someone really used a tool. *How:* hover (or tap) a tool and a little card pops up above it. The card names the real projects on this page that use that tool and shows a tiny bar for "used in 2 of 4 projects." We build the card from the true project list, so it can never lie or brag. *Idea we followed:* reward you with real information, not a sound.
+- **A cursor spotlight.** *Why:* it makes the page feel warm and alive as you move the mouse. *How:* a soft round glow follows the pointer. It only turns on for real mouse users, and it turns off for phones and for people who ask for less motion. *Idea we followed:* nice to have, never in the way.
+- **Cards that tilt and buttons that lean.** *Why:* a small lean toward your mouse makes flat things feel like real objects you can touch. *How:* when the pointer is over a project card, the card tips a few degrees toward it; buttons drift a few pixels toward the pointer, then spring back when you leave. *Idea we followed:* gentle motion, quick to settle, never dizzying.
+- **A scroll bar at the very top.** *Why:* it shows how far down the page you are, like a progress bar in a video. *How:* a thin colored line at the top grows wider as you scroll. *Idea we followed:* give people a sense of place.
+- **The menu knows where you are.** *Why:* it helps you keep track of which part you are reading. *How:* as a section scrolls into the middle of the screen, its name in the top menu lights up with a small underline. *Idea we followed:* the page should quietly point at itself.
+- **A command box (press ⌘K or Ctrl+K).** *Why:* fast people like to jump around with the keyboard, and it makes the site feel like a real tool an engineer built. *How:* press ⌘K (or click the ⌘K button) and a search box opens. Type a few letters to find a section, a page, a link, or "theme," then press Enter to go. Arrow keys move the choice, Esc closes it. *Idea we followed:* one quick door to everything.
+
+**The big design rules behind all of this:** feedback should be *quiet* (never loud or sudden), *honest* (the tooltip only shows true facts), *kind to everyone* (it all turns off for phones and for people who want less motion), and *fast* (nothing lags while you scroll). We removed things that were just for show — the sound on the pills, the photo-swap toggle, and the visitor counter — and kept only the parts that help you or tell you something true.
+
 ### Content sections
-- **Tech Stack** — filterable pills (All / Frontend / Backend / AI & Agents / Tools) with brand icons; a few icons are inlined as SVG (`currentColor`) so they stay visible in both themes.
+- **Tech Stack** — filterable pills (All / Frontend / Backend / AI & Agents / Tools) with brand icons; a few icons are inlined as SVG (`currentColor`) so they stay visible in both themes. **Hovering a pill shows a tooltip** with the tech's category and which real projects on the page use it (built from the live `PROJECTS` data, so it is always accurate).
 - **GitHub Activity** — a real contribution heatmap rendered client-side using GitHub's exact green scale.
 - **Highlights** — an auto-scrolling testimonial marquee; clicking the arrows stops it and snaps one card centered, then auto-resumes after a few seconds. Each card links to the person's LinkedIn to let visitors verify it.
 - **Writing** page added for technical posts.
 - **Contact** page with a two-box form (purpose + details) that delivers to email.
 
 ### Reliability fixes
-- **View counter** was migrated off a deprecated service (it was showing `NaN` on mobile) to a single shared cross-device counter, with a guard so it never renders `NaN`.
 - **Mobile banner** hardened for reliable muted inline autoplay (no play-button overlay).
 
 ---
@@ -88,14 +100,17 @@ This is a **no-framework** site by design (fast, zero build, easy to host anywhe
 | Mobile nav fold | CSS **3D transforms** (`rotateX` + `perspective`) with staggered `transition-delay`; small vanilla-JS controller for the fold-close and exact height |
 | Progressive blur | Stacked **`backdrop-filter: blur()`** layers with `mask-image` gradients (top edge, under the nav) |
 | Scroll-to-hero | Native **`history.scrollRestoration`** + `scrollTo` on load/`pageshow` |
-| Sound | **Web Audio API** (native) — sounds synthesized live |
+| Command palette (⌘K) | Plain JS overlay — fuzzy substring filter over a list of sections, pages, links, and the theme action; full keyboard control |
+| Scroll progress + active nav | `scroll` listener driving a `scaleX` bar + an **IntersectionObserver** that lights the current section in the menu |
+| Cursor spotlight / tilt / magnetic | `pointermove` + `requestAnimationFrame`, gated to fine-pointer, non-reduced-motion devices |
+| Tech tooltips | Built from the live `PROJECTS` data (category + which real projects use each tech) |
+| Sound | **Web Audio API** (native) — a soft pop on the theme toggle |
 | Hero banner | Pre-rendered looping **MP4** in `assets/` |
 
 ### "Backend" (there is no server — external APIs called from the browser)
 | Feature | Service |
 |---------|---------|
 | Contact form delivery | **Web3Forms** |
-| Live view counter | **Abacus** (shared cross-device counter) |
 | GitHub contribution data | **GitHub contributions API** |
 
 ### Tooling (used during development, not shipped)
