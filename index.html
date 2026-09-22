@@ -336,9 +336,70 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
   .cmdk-empty{padding:18px;text-align:center;color:var(--muted-2);font-size:13px}
   .cmdk-foot{display:flex;gap:14px;padding:9px 14px;border-top:1px solid var(--border);font-family:var(--mono);font-size:10px;color:var(--muted-2)}
   .cmdk-foot kbd{border:1px solid var(--border);border-radius:4px;padding:1px 5px;margin-right:3px}
+
+  /* ---- intro overlay (black screen + GSAP typing) ---- */
+  html.intro-lock,html.intro-lock body{overflow:hidden}
+  #intro{position:fixed;inset:0;z-index:2000;background:#000;display:flex;align-items:center;justify-content:center;padding:28px}
+  #intro .intro-stage{position:relative;width:min(760px,92vw);min-height:200px;display:grid;place-items:center}
+  #intro .intro-line{grid-area:1/1;margin:0;max-width:100%;text-align:center;will-change:transform,opacity}
+  #introL1{font-family:var(--serif);font-weight:400;color:#fafafa;font-size:clamp(28px,5.4vw,52px);line-height:1.15;letter-spacing:.01em}
+  #introL1.typing::after{content:'▍';margin-left:.04em;color:#8fb3ff;animation:introCaret 1s steps(1) infinite}
+  @keyframes introCaret{50%{opacity:0}}
+  #introL2{font-family:var(--sans);color:#d4d4d4;font-size:clamp(15px,2.5vw,19px);line-height:1.66;max-width:620px;opacity:0}
+  #introL2 b{color:#fafafa;font-weight:600}
+  #introSkip{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:11px;
+    letter-spacing:.06em;color:#6b6b6b;background:none;border:none;cursor:pointer;transition:color .2s}
+  #introSkip:hover{color:#cfcfcf}
+  @media(prefers-reduced-motion:reduce){#intro{display:none}}
 </style>
 </head>
 <body>
+
+<div id="intro">
+  <div class="intro-stage">
+    <p id="introL1" class="intro-line"></p>
+    <p id="introL2" class="intro-line"></p>
+  </div>
+  <button id="introSkip" type="button">skip intro</button>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/TextPlugin.min.js"></script>
+<script>
+(function(){
+  const intro=document.getElementById('intro');
+  if(!intro) return;
+  const l1=document.getElementById('introL1'), l2=document.getElementById('introL2');
+  const LINE1='Welcome to my corner of the internet';
+  const LINE2='Relax and take a look at my space. If you have any suggestions to improve my corner of the internet, do drop them down in my email. I read every email and reply to them by myself, <b>no AI btw</b>.';
+  const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  let seen=false; try{ seen=sessionStorage.getItem('introSeen')==='1'; }catch(e){}
+  let done=false;
+  function finish(){ if(done) return; done=true;
+    try{ sessionStorage.setItem('introSeen','1'); }catch(e){}
+    document.documentElement.classList.remove('intro-lock');
+    intro.style.display='none'; intro.remove();
+  }
+  if(seen || reduce || !window.gsap){ finish(); return; }
+  document.documentElement.classList.add('intro-lock');
+  window.scrollTo(0,0);
+  gsap.registerPlugin(TextPlugin);
+  gsap.set(l2,{yPercent:0,y:64,opacity:0});
+  gsap.set(l1,{y:0,opacity:1}); l1.textContent=''; l1.classList.add('typing');
+  const tl=gsap.timeline({onComplete:finish});
+  tl.to(l1,{duration:1.7,text:{value:LINE1,delimiter:''},ease:'none'})
+    .add(()=>l1.classList.remove('typing'))
+    .to(l1,{duration:0.6,y:-46,opacity:0,ease:'power2.in'},'+=0.55')
+    .add(()=>{ l2.innerHTML=LINE2; })
+    .to(l2,{duration:0.95,y:0,opacity:1,ease:'power3.out'},'-=0.1')
+    .to({},{duration:3.6})
+    .to(intro,{duration:0.7,opacity:0,ease:'power2.inOut'});
+  function skip(){ if(done) return; tl.progress(1); }
+  document.getElementById('introSkip').addEventListener('click',skip);
+  ['keydown','wheel','touchstart'].forEach(ev=>addEventListener(ev,skip,{once:true,passive:true}));
+  // safety: never leave a black screen stuck
+  setTimeout(()=>{ if(!done) finish(); }, 12000);
+})();
+</script>
 
 <div class="scroll-prog" aria-hidden="true"><i></i></div>
 <div class="cursor-glow" aria-hidden="true"></div>
