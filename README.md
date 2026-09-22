@@ -55,6 +55,11 @@ The portfolio started as a plain static page. Over the course of development it 
 - Subtle **sound effects**: a xylophone note on each tech-stack pill (hover on desktop, tap on mobile), a soft "pop" on the theme toggle, and a knock on the avatar toggle.
 - *Why the rewrites:* sounds are synthesized live with the **Web Audio API** for near-zero latency. To keep them audible on iOS even with the ring/silent switch on, a short silent looping media element flips the audio session to "playback" on first touch.
 
+### Motion & effects
+- **Mobile navigation — paper fold.** *What:* the mobile menu (the ☰ button) opens and closes with a vertical "paper-fold" animation instead of an abrupt show/hide. *Where:* the `.mnav` panel and its links in the injected `mnavStyle` block plus a small JS controller in each page's script (`index.html`, `contact.html`, `writing.html`). *How:* the panel is a `rotateX(-90deg → 0)` fold from a top `transform-origin` with `perspective` on the header; the links unfold in a staggered sequence. Open folds top→bottom (ascending `transition-delay`); close folds bottom→top (a `.closing` class with reversed delays). Height is driven to the exact `scrollHeight` in JS so there is no max-height overshoot. The menu itself is a **grey-black liquid-glass** surface (translucent background + `backdrop-filter: blur() saturate()`, hairline border, inset highlight).
+- **Progressive scroll blur.** *What:* content blurs gradually as it passes behind the fixed nav at the top edge and toward the bottom edge, on both laptop and mobile. *Where:* the `.scroll-blur` (top) and `.scroll-blur-b` (bottom) fixed overlays at the top of `<body>` in `index.html`, styled in the same `<style>` block. *How:* each overlay stacks six layers, every layer a full-width `backdrop-filter: blur()` with an increasing blur (1 → 28px) and a `mask-image` linear-gradient that reveals a progressively smaller band toward the edge — the overlapping masked layers add up to a smooth progressive (graduated) blur rather than a single hard blur.
+- **Always land on the hero.** *What:* every visit and reload starts at the top (hero), regardless of where a previous visitor scrolled. *Where:* the inline script in `index.html`'s `<head>`. *How:* `history.scrollRestoration = 'manual'` disables the browser's scroll restore, and `scrollTo(0,0)` is forced on `DOMContentLoaded`, `load`, and `pageshow` (the last covers the back/forward bfcache).
+
 ### Content sections
 - **Tech Stack** — filterable pills (All / Frontend / Backend / AI & Agents / Tools) with brand icons; a few icons are inlined as SVG (`currentColor`) so they stay visible in both themes.
 - **GitHub Activity** — a real contribution heatmap rendered client-side using GitHub's exact green scale.
@@ -80,6 +85,9 @@ This is a **no-framework** site by design (fast, zero build, easy to host anywhe
 | Fonts | **Google Fonts** — Instrument Serif (display), Inter (body), JetBrains Mono (labels/numbers) |
 | Icons | Inline **SVG** (Lucide-style sun/moon, brand marks) + **Simple Icons** CDN for tech logos |
 | Theme transition | **View Transitions API** (native browser) for the circular reveal |
+| Mobile nav fold | CSS **3D transforms** (`rotateX` + `perspective`) with staggered `transition-delay`; small vanilla-JS controller for the fold-close and exact height |
+| Progressive blur | Stacked **`backdrop-filter: blur()`** layers with `mask-image` gradients (top + bottom edges) |
+| Scroll-to-hero | Native **`history.scrollRestoration`** + `scrollTo` on load/`pageshow` |
 | Sound | **Web Audio API** (native) — sounds synthesized live |
 | Hero banner | Pre-rendered looping **MP4** in `assets/` |
 
