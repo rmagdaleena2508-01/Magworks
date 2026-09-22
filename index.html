@@ -978,38 +978,36 @@ addEventListener('scroll',updateProg,{passive:true}); addEventListener('resize',
 // active section highlight in nav
 const navLinks=[...document.querySelectorAll('.nav-links a')];
 const navInd=document.querySelector('.nav-ind');
-// single underline that slides between links (width/x transition = smooth glide)
-function moveInd(link){
-  if(!navInd) return;
-  if(!link){ navInd.style.opacity='0'; return; }
-  navInd.style.width=Math.max(0,link.offsetWidth-24)+'px';
-  navInd.style.transform='translateX('+(link.offsetLeft+12)+'px)';
-  navInd.style.opacity='1';
-}
-let curHref=null;
-function setActiveLink(href){
-  if(href===curHref) return; curHref=href;
-  let active=null;
-  navLinks.forEach(a=>{ const on=a.getAttribute('href')===href; a.classList.toggle('active',on); if(on) active=a; });
-  moveInd(active);
-}
-// scroll-spy anchored just below the fixed header, so short sections (like Contact)
-// still win over the taller section beneath them instead of being skipped.
-const SPY={about:'#top',contact:'#contact',projects:'#projects',stack:'#stack'};
-const spyEls=Object.keys(SPY).map(id=>document.getElementById(id)).filter(Boolean);
+// The underline is driven every scroll frame (not eased on a state change), so it
+// tracks the scroll continuously with zero trailing. Sections in vertical order,
+// each mapped to its nav link.
+const SPY=[['top','#top'],['contact','#contact'],['projects','#projects'],['stack','#stack']];
+const linkFor={}; navLinks.forEach(a=>linkFor[a.getAttribute('href')]=a);
+const spySecs=SPY.map(([id,href])=>({el:document.getElementById(id),link:linkFor[href]})).filter(s=>s.el&&s.link);
+if(navInd) navInd.style.transition='none'; // per-frame drive, no CSS trailing
+const geo=link=>({x:link.offsetLeft+12,w:Math.max(0,link.offsetWidth-24)});
+let curIdx=-1;
 function updateSpy(){
-  const line=90; // px from top — just under the ~52px sticky nav
-  let cur=null;
-  for(const el of spyEls){ if(el.getBoundingClientRect().top-line<=0) cur=el; }
-  setActiveLink(cur?SPY[cur.id]:'#top');
+  if(!navInd||!spySecs.length) return;
+  const line=90, BAND=110, y=scrollY;
+  // scroll offset at which each section reaches the line just under the sticky nav
+  const b=spySecs.map((s,i)=> i===0 ? 0 : s.el.getBoundingClientRect().top+y-line );
+  let i=0; for(let k=0;k<b.length;k++){ if(y>=b[k]-0.5) i=k; }
+  // glide toward the next link over the last BAND px before its boundary
+  let g=geo(spySecs[i].link);
+  if(i<b.length-1){
+    const f=Math.min(1,Math.max(0,(y-(b[i+1]-BAND))/BAND));
+    if(f>0){ const g2=geo(spySecs[i+1].link); g={x:g.x+(g2.x-g.x)*f, w:g.w+(g2.w-g.w)*f}; }
+  }
+  navInd.style.width=g.w+'px'; navInd.style.transform='translateX('+g.x+'px)'; navInd.style.opacity='1';
+  // colour switches at the midpoint of the crossing
+  const activeIdx=(i<b.length-1 && y>=b[i+1]-BAND/2)?i+1:i;
+  if(activeIdx!==curIdx){ curIdx=activeIdx; navLinks.forEach(a=>a.classList.toggle('active',a===spySecs[activeIdx].link)); }
 }
 let spyRaf=0;
 addEventListener('scroll',()=>{ if(!spyRaf) spyRaf=requestAnimationFrame(()=>{ updateSpy(); spyRaf=0; }); },{passive:true});
-addEventListener('resize',updateSpy);
+addEventListener('resize',()=>{ curIdx=-1; updateSpy(); });
 updateSpy();
-// place the underline under Home immediately, without an entry-slide
-if(navInd){ navInd.style.transition='none'; setActiveLink('#top'); requestAnimationFrame(()=>{ navInd.style.transition=''; }); }
-addEventListener('resize',()=>{ const a=document.querySelector('.nav-links a.active'); if(a){ const t=navInd.style.transition; navInd.style.transition='none'; moveInd(a); void navInd.offsetWidth; navInd.style.transition=t; } });
 
 // cursor spotlight — follows the pointer (desktop only)
 const glow=document.querySelector('.cursor-glow');
