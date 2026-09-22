@@ -127,7 +127,7 @@
         <svg class="ic ic-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
         <svg class="ic ic-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
       </button>
-      <button class="icon-btn hamburger" aria-label="Menu" onclick="document.getElementById('mnav').classList.toggle('open')">
+      <button class="icon-btn hamburger" aria-label="Menu">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
       </button>
     </div>
@@ -218,16 +218,30 @@ themeBtn.onclick=()=>{
 
 // mobile nav
 const mnavStyle = document.createElement('style');
-mnavStyle.textContent = `header{perspective:1000px}
-.mnav{display:flex;flex-direction:column;gap:2px;padding:8px 16px 14px;transform-origin:top center;transform:rotateX(-90deg);opacity:0;max-height:0;overflow:hidden;pointer-events:none;transform-style:preserve-3d;will-change:transform,opacity;transition:transform .5s cubic-bezier(.4,0,.2,1),opacity .34s ease,max-height .5s cubic-bezier(.4,0,.2,1);background:linear-gradient(180deg,rgba(44,44,50,.55),rgba(12,12,15,.62));-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4);border-bottom:1px solid rgba(255,255,255,.13);box-shadow:0 16px 34px -12px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,255,255,.09)}
-.mnav.open{transform:rotateX(0);opacity:1;max-height:340px;pointer-events:auto}
-.mnav a{padding:11px 8px;font-size:14.5px;color:#d4d4d8;border-radius:8px;transform-origin:top;transform:rotateX(-80deg);opacity:0;transition:transform .4s cubic-bezier(.4,0,.2,1),opacity .3s ease,background .2s}
+mnavStyle.textContent = `header{perspective:1100px}
+.mnav{display:flex;flex-direction:column;gap:2px;padding:8px 16px 14px;transform-origin:top center;transform:rotateX(-88deg);opacity:0;max-height:0;overflow:hidden;pointer-events:none;transform-style:preserve-3d;will-change:transform,max-height;transition:transform .55s cubic-bezier(.33,1,.68,1),opacity .4s ease,max-height .55s cubic-bezier(.33,1,.68,1);background:linear-gradient(180deg,rgba(44,44,50,.55),rgba(12,12,15,.62));-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4);border-bottom:1px solid rgba(255,255,255,.13);box-shadow:0 16px 34px -12px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,255,255,.09)}
+.mnav.open{transform:rotateX(0);opacity:1;pointer-events:auto}
+.mnav.closing{pointer-events:none}
+.mnav a{padding:11px 8px;font-size:14.5px;color:#d4d4d8;border-radius:8px;transform-origin:top center;transform:rotateX(-78deg);opacity:0;transition:transform .46s cubic-bezier(.33,1,.68,1),opacity .34s ease,background .2s}
 .mnav.open a{transform:rotateX(0);opacity:1}
-.mnav.open a:nth-child(1){transition-delay:.07s}.mnav.open a:nth-child(2){transition-delay:.13s}.mnav.open a:nth-child(3){transition-delay:.19s}.mnav.open a:nth-child(4){transition-delay:.25s}.mnav.open a:nth-child(5){transition-delay:.31s}
+.mnav.open a:nth-child(1){transition-delay:.06s}.mnav.open a:nth-child(2){transition-delay:.12s}.mnav.open a:nth-child(3){transition-delay:.18s}.mnav.open a:nth-child(4){transition-delay:.24s}.mnav.open a:nth-child(5){transition-delay:.30s}
+.mnav.closing a:nth-child(5){transition-delay:0s}.mnav.closing a:nth-child(4){transition-delay:.06s}.mnav.closing a:nth-child(3){transition-delay:.12s}.mnav.closing a:nth-child(2){transition-delay:.18s}.mnav.closing a:nth-child(1){transition-delay:.24s}
 .mnav a:hover{background:rgba(255,255,255,.08);color:#fff}
 .hamburger{color:#c9c9cf;border-color:rgba(255,255,255,.16);background:rgba(30,30,34,.5);-webkit-backdrop-filter:blur(10px) saturate(1.3);backdrop-filter:blur(10px) saturate(1.3)}
 .hamburger:hover{color:#fff;border-color:rgba(255,255,255,.28);background:rgba(48,48,54,.6)}`;
 document.head.appendChild(mnavStyle);
+// paper-fold nav: open (top→bottom) / close (bottom→top), height driven by scrollHeight for smoothness
+(function(){
+  const mnav=document.getElementById('mnav'); if(!mnav) return;
+  const ham=document.querySelector('.hamburger');
+  function openNav(){ mnav.classList.remove('closing'); mnav.classList.add('open'); mnav.style.maxHeight=mnav.scrollHeight+'px'; }
+  function closeNav(){ if(!mnav.classList.contains('open')) return;
+    mnav.classList.add('closing'); mnav.classList.remove('open'); mnav.style.maxHeight='0px';
+    const done=e=>{ if(e.target!==mnav||e.propertyName!=='max-height') return; mnav.classList.remove('closing'); mnav.removeEventListener('transitionend',done); };
+    mnav.addEventListener('transitionend',done); }
+  if(ham) ham.onclick=()=>{ mnav.classList.contains('open')?closeNav():openNav(); };
+  mnav.querySelectorAll('a').forEach(a=>a.addEventListener('click',closeNav));
+})();
 
 // reveal on scroll
 const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}})},{rootMargin:'0px 0px -8% 0px'});
