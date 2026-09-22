@@ -386,32 +386,53 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
   gsap.set(l2,{yPercent:0,y:64,opacity:0});
   gsap.set(l1,{y:0,opacity:1}); l1.textContent=''; l1.classList.add('typing');
 
-  // Black pixelated top-to-bottom dissolve. A canvas holds the black; blocks do NOT
-  // snap off — each fades over a soft window so the melt is smooth, top row first.
-  // Slow, gentle sine easing (easy on the eyes); ends fully clear so removing the
-  // layer is invisible (no sudden cut). Works on every device (plain canvas alpha).
+  // Glass pixelated top-to-bottom reveal. Two layers over the live hero:
+  //  (1) a backdrop-filter BLUR sheet, cleared top->bottom by a tiny alpha mask, and
+  //  (2) a DRAWN glass-tile canvas (smoked translucent squares + seam + top highlight)
+  //      that also covers/obscures the hero — so it works on every device, and the hero
+  //      is never shown sharp-and-whole. Both clear over the same soft threshold.
+  // ORDER FIX: the covering frame is drawn SYNCHRONOUSLY (full glass) and the black
+  // backdrop is only handed off on the NEXT frame, so the hero can never flash before
+  // the glass is in place. Ends fully clear -> invisible removal (no sudden cut).
   let dissolveTween=null;
   function pixelDissolve(onDone){
-    const cv=document.createElement('canvas');
-    cv.style.cssText='position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none';
-    intro.insertBefore(cv, intro.firstChild);           // behind the (now hidden) text
     const dpr=Math.min(2, window.devicePixelRatio||1), W=innerWidth, H=innerHeight;
-    cv.width=Math.ceil(W*dpr); cv.height=Math.ceil(H*dpr);
-    const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr);
-    const cell=Math.max(16, Math.round(Math.min(W,H)/30));   // pixel-block size
-    const cols=Math.ceil(W/cell), rows=Math.ceil(H/cell), spread=7;
+    const blur=document.createElement('div');
+    blur.style.cssText='position:fixed;inset:0;z-index:0;pointer-events:none;will-change:mask-image;'+
+      '-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4);'+
+      '-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-size:100% 100%;mask-size:100% 100%;'+
+      '-webkit-mask-mode:alpha;mask-mode:alpha';
+    const tiles=document.createElement('canvas');
+    tiles.style.cssText='position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none';
+    tiles.width=Math.ceil(W*dpr); tiles.height=Math.ceil(H*dpr);
+    intro.insertBefore(tiles, intro.firstChild);
+    intro.insertBefore(blur, intro.firstChild);
+    const tc=tiles.getContext('2d'); tc.scale(dpr,dpr);
+
+    const cell=Math.max(20, Math.round(Math.min(W,H)/26));
+    const cols=Math.ceil(W/cell), rows=Math.ceil(H/cell), spread=7, SS=4, FADE=0.24;
     const th=new Float32Array(cols*rows);
     for(let r=0;r<rows;r++)for(let c=0;c<cols;c++) th[r*cols+c]=(r+Math.random()*spread)/(rows+spread);
-    intro.style.background='transparent';                // hand the black to the canvas
-    const FADE=0.22;                                     // soft per-block fade window
+    const mc=document.createElement('canvas'); mc.width=cols*SS; mc.height=rows*SS;
+    const mx=mc.getContext('2d');
+    function draw(p){
+      mx.clearRect(0,0,mc.width,mc.height); mx.fillStyle='#fff'; tc.clearRect(0,0,W,H);
+      for(let r=0;r<rows;r++){ const rb=r*cols, my=r*SS, y=r*cell; for(let c=0;c<cols;c++){
+        const a=(th[rb+c]-p)/FADE; if(a<=0) continue;
+        const av=a<1?a:1, x=c*cell;
+        mx.globalAlpha=av; mx.fillRect(c*SS, my, SS, SS);                       // blur mask
+        tc.globalAlpha=av;      tc.fillStyle='rgba(8,10,14,.42)';  tc.fillRect(x, y, cell, cell);         // smoked glass (obscures hero)
+        tc.globalAlpha=av*0.5;  tc.fillStyle='rgba(255,255,255,.14)'; tc.fillRect(x, y, cell, 2);         // top highlight
+        tc.globalAlpha=av*0.4;  tc.strokeStyle='rgba(255,255,255,.10)'; tc.lineWidth=1; tc.strokeRect(x+0.5, y+0.5, cell-1, cell-1); // seam
+      } }
+      mx.globalAlpha=1; tc.globalAlpha=1;
+      const url='url('+mc.toDataURL()+')'; blur.style.webkitMaskImage=url; blur.style.maskImage=url;
+    }
+    draw(-FADE);                                        // full glass NOW, before revealing anything
+    requestAnimationFrame(()=>{ intro.style.background='transparent'; }); // hand off black only once glass is painted
     const obj={p:-FADE};
     dissolveTween=gsap.to(obj,{p:1+FADE,duration:2.9,ease:'sine.inOut',
-      onUpdate:()=>{ const p=obj.p; ctx.clearRect(0,0,W,H); ctx.fillStyle='#000';
-        for(let r=0;r<rows;r++){ const rb=r*cols, y=r*cell; for(let c=0;c<cols;c++){
-          const a=(th[rb+c]-p)/FADE;                     // 1 = solid, 0..1 = melting, <=0 = gone
-          if(a>0){ ctx.globalAlpha=a<1?a:1; ctx.fillRect(c*cell, y, cell+1, cell+1); } } }
-        ctx.globalAlpha=1; },
-      onComplete:onDone});
+      onUpdate:()=>draw(obj.p), onComplete:onDone});
   }
 
   // typewriter: grow textContent one character at a time at a human pace (no TextPlugin,
