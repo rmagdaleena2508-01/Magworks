@@ -289,9 +289,11 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
   @media(max-width:560px){.nowbar{border-radius:14px}}
 
   /* ---- active nav link ---- */
-  .nav-links a{position:relative}
+  .nav-links{position:relative}
   .nav-links a.active{color:var(--fg)}
-  .nav-links a.active::after{content:"";position:absolute;left:12px;right:12px;bottom:2px;height:1.5px;border-radius:2px;background:var(--accent)}
+  .nav-ind{position:absolute;bottom:2px;left:0;height:1.5px;width:0;border-radius:2px;background:var(--accent);
+    opacity:0;transform:translateX(0);pointer-events:none;will-change:transform,width;
+    transition:transform .3s cubic-bezier(.4,0,.2,1),width .3s cubic-bezier(.4,0,.2,1),opacity .2s ease}
 
   /* ---- tech pill tooltip ---- */
   .pgrid{perspective:1000px}
@@ -348,6 +350,7 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
       <a href="#projects">Projects</a>
       <a href="#stack">Stack</a>
       <a href="./writing.html">Writing</a>
+      <span class="nav-ind" aria-hidden="true"></span>
     </nav>
     <div class="nav-right">
       <button class="icon-btn cmdk-open" id="cmdkOpen" aria-label="Open command menu" title="Command menu (⌘K)">⌘K</button>
@@ -935,11 +938,28 @@ addEventListener('scroll',updateProg,{passive:true}); addEventListener('resize',
 
 // active section highlight in nav
 const navLinks=[...document.querySelectorAll('.nav-links a')];
+const navInd=document.querySelector('.nav-ind');
+// single underline that slides between links (width/x transition = smooth glide)
+function moveInd(link){
+  if(!navInd) return;
+  if(!link){ navInd.style.opacity='0'; return; }
+  navInd.style.width=Math.max(0,link.offsetWidth-24)+'px';
+  navInd.style.transform='translateX('+(link.offsetLeft+12)+'px)';
+  navInd.style.opacity='1';
+}
+let curHref=null;
+function setActiveLink(href){
+  if(href===curHref) return; curHref=href;
+  let active=null;
+  navLinks.forEach(a=>{ const on=a.getAttribute('href')===href; a.classList.toggle('active',on); if(on) active=a; });
+  moveInd(active);
+}
 const SPY={about:'#top',contact:'#contact',projects:'#projects',stack:'#stack'};
-const spy=new IntersectionObserver(es=>{es.forEach(e=>{ if(e.isIntersecting){
-  const href=SPY[e.target.id]; navLinks.forEach(a=>a.classList.toggle('active',a.getAttribute('href')===href));
-}});},{rootMargin:'-40% 0px -55% 0px',threshold:0});
+const spy=new IntersectionObserver(es=>{es.forEach(e=>{ if(e.isIntersecting) setActiveLink(SPY[e.target.id]); });},{rootMargin:'-30% 0px -62% 0px',threshold:0});
 Object.keys(SPY).forEach(id=>{const s=document.getElementById(id); if(s) spy.observe(s);});
+// place the underline under Home immediately, without an entry-slide
+if(navInd){ navInd.style.transition='none'; setActiveLink('#top'); requestAnimationFrame(()=>{ navInd.style.transition=''; }); }
+addEventListener('resize',()=>{ const a=document.querySelector('.nav-links a.active'); if(a){ const t=navInd.style.transition; navInd.style.transition='none'; moveInd(a); void navInd.offsetWidth; navInd.style.transition=t; } });
 
 // cursor spotlight — follows the pointer (desktop only)
 const glow=document.querySelector('.cursor-glow');
