@@ -386,63 +386,45 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
   gsap.set(l2,{yPercent:0,y:64,opacity:0});
   gsap.set(l1,{y:0,opacity:1}); l1.textContent=''; l1.classList.add('typing');
 
-  // Glassy pixel reveal — NOT black. Two stacked layers over the live hero:
-  //  (1) a real backdrop-filter BLUR sheet, cleared top->bottom by a tiny alpha mask
-  //      (frosts the hero where supported), and
-  //  (2) a DRAWN glass-tile canvas — translucent white squares with seams + a light
-  //      top edge highlight — so the pixel "glass tiles" are clearly visible on EVERY
-  //      device, including mobile Safari where masking a backdrop-filter can fail.
-  // Both clear from the top down over the same soft threshold; it ends fully clear so
-  // removing the layers is invisible (no sudden cut).
+  // Black pixelated top-to-bottom dissolve. A canvas holds the black; blocks do NOT
+  // snap off — each fades over a soft window so the melt is smooth, top row first.
+  // Slow, gentle sine easing (easy on the eyes); ends fully clear so removing the
+  // layer is invisible (no sudden cut). Works on every device (plain canvas alpha).
   let dissolveTween=null;
   function pixelDissolve(onDone){
-    const W=innerWidth, H=innerHeight, dpr=Math.min(2, window.devicePixelRatio||1);
-    const blur=document.createElement('div');
-    blur.style.cssText='position:fixed;inset:0;z-index:0;pointer-events:none;will-change:mask-image;'+
-      '-webkit-backdrop-filter:blur(20px) saturate(1.5);backdrop-filter:blur(20px) saturate(1.5);'+
-      '-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-size:100% 100%;mask-size:100% 100%;'+
-      '-webkit-mask-mode:alpha;mask-mode:alpha';
-    const tiles=document.createElement('canvas');
-    tiles.style.cssText='position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none';
-    tiles.width=Math.ceil(W*dpr); tiles.height=Math.ceil(H*dpr);
-    intro.insertBefore(tiles, intro.firstChild);        // tiles above blur
-    intro.insertBefore(blur, intro.firstChild);         // blur underneath
-    const tc=tiles.getContext('2d'); tc.scale(dpr,dpr);
-    // crossfade the black backdrop out so the hero fades in (blurred) — no pop
-    intro.style.transition='background .5s ease'; intro.style.background='transparent';
-
-    const cell=Math.max(22, Math.round(Math.min(W,H)/24));       // glass tile size (bigger = clearer)
-    const cols=Math.ceil(W/cell), rows=Math.ceil(H/cell), spread=7, SS=4;
+    const cv=document.createElement('canvas');
+    cv.style.cssText='position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none';
+    intro.insertBefore(cv, intro.firstChild);           // behind the (now hidden) text
+    const dpr=Math.min(2, window.devicePixelRatio||1), W=innerWidth, H=innerHeight;
+    cv.width=Math.ceil(W*dpr); cv.height=Math.ceil(H*dpr);
+    const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr);
+    const cell=Math.max(16, Math.round(Math.min(W,H)/30));   // pixel-block size
+    const cols=Math.ceil(W/cell), rows=Math.ceil(H/cell), spread=7;
     const th=new Float32Array(cols*rows);
     for(let r=0;r<rows;r++)for(let c=0;c<cols;c++) th[r*cols+c]=(r+Math.random()*spread)/(rows+spread);
-    const mc=document.createElement('canvas'); mc.width=cols*SS; mc.height=rows*SS;
-    const mx=mc.getContext('2d');
-    const FADE=0.26;                                    // soft per-tile fade window (glassy melt)
+    intro.style.background='transparent';                // hand the black to the canvas
+    const FADE=0.22;                                     // soft per-block fade window
     const obj={p:-FADE};
-    dissolveTween=gsap.to(obj,{p:1+FADE,duration:3.0,ease:'sine.inOut',
-      onUpdate:()=>{ const p=obj.p;
-        mx.clearRect(0,0,mc.width,mc.height); mx.fillStyle='#fff';
-        tc.clearRect(0,0,W,H);
-        for(let r=0;r<rows;r++){ const rb=r*cols, my=r*SS, y=r*cell; for(let c=0;c<cols;c++){
-          const a=(th[rb+c]-p)/FADE; if(a<=0) continue;  // <=0 = fully clear (sharp hero)
-          const av=a<1?a:1, x=c*cell;
-          mx.globalAlpha=av; mx.fillRect(c*SS, my, SS, SS);          // blur-layer mask
-          // visible frosted glass tile
-          tc.globalAlpha=av*0.9;  tc.fillStyle='rgba(255,255,255,.14)'; tc.fillRect(x, y, cell, cell);
-          tc.globalAlpha=av*0.85; tc.fillStyle='rgba(255,255,255,.16)'; tc.fillRect(x, y, cell, 2);      // top highlight
-          tc.globalAlpha=av*0.5;  tc.strokeStyle='rgba(255,255,255,.12)'; tc.lineWidth=1; tc.strokeRect(x+0.5, y+0.5, cell-1, cell-1); // seam
-        } }
-        mx.globalAlpha=1; tc.globalAlpha=1;
-        const url='url('+mc.toDataURL()+')';
-        blur.style.webkitMaskImage=url; blur.style.maskImage=url; },
+    dissolveTween=gsap.to(obj,{p:1+FADE,duration:2.9,ease:'sine.inOut',
+      onUpdate:()=>{ const p=obj.p; ctx.clearRect(0,0,W,H); ctx.fillStyle='#000';
+        for(let r=0;r<rows;r++){ const rb=r*cols, y=r*cell; for(let c=0;c<cols;c++){
+          const a=(th[rb+c]-p)/FADE;                     // 1 = solid, 0..1 = melting, <=0 = gone
+          if(a>0){ ctx.globalAlpha=a<1?a:1; ctx.fillRect(c*cell, y, cell+1, cell+1); } } }
+        ctx.globalAlpha=1; },
       onComplete:onDone});
   }
 
+  // typewriter: grow textContent one character at a time at a human pace (no TextPlugin,
+  // which re-set the node and caused a blink on mobile). A tween on a character index
+  // reveals via slice(), so it never clears/re-inserts — smooth on every device.
+  const PER=0.075;                       // seconds per character (~13 cps, human-ish)
+  const nObj={n:0};
+  const renderType=()=>{ l1.textContent=LINE1.slice(0, Math.round(nObj.n)); };
   const tl=gsap.timeline();
-  tl.to(l1,{duration:0.5,text:{value:LINE1A,delimiter:''},ease:'none'})      // "Welcome"
-    .to(l1,{duration:1.35,text:{value:LINE1,delimiter:''},ease:'none'},'+=0.6') // pause, then rest + "!"
+  tl.to(nObj,{n:LINE1A.length, duration:LINE1A.length*PER, ease:'none', onUpdate:renderType})   // "Welcome"
+    .to(nObj,{n:LINE1.length, duration:(LINE1.length-LINE1A.length)*PER, ease:'none', onUpdate:renderType}, '+=0.55') // pause, then the rest + "!"
     .add(()=>l1.classList.remove('typing'))
-    .to(l1,{duration:0.6,y:-46,opacity:0,ease:'power2.in'},'+=0.55')
+    .to(l1,{duration:0.6,y:-46,opacity:0,ease:'power2.in'},'+=0.6')
     .add(()=>{ l2.innerHTML=LINE2; })
     .to(l2,{duration:0.95,y:0,opacity:1,ease:'power3.out'},'-=0.1')
     .to({},{duration:3.4})
@@ -506,7 +488,7 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
           <div class="pname">Magdaleena</div>
         </div>
         <div class="role" id="roleText">Software Engineer</div>
-        <div class="loc">CS @ SRMIST · AI Engineer · India</div>
+        <div class="loc">CS @ SRMIST · India</div>
       </div>
     </div>
   </div>
@@ -517,7 +499,7 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
       <div class="nowbar">
         <span class="dot"></span>
         <span class="lbl">Now</span>
-        <span>Interning as an <b>AI engineer</b> · building <b>multi-agent systems</b> · learning <b>RAG evals</b></span>
+        <span>Interning as an <b>AI engineer</b> · building <b>multi-agent systems</b></span>
       </div>
     </div>
   </div>
