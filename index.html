@@ -347,8 +347,8 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
   @keyframes introCaret{50%{opacity:0}}
   #introL2{font-family:var(--sans);color:#d4d4d4;font-size:clamp(15px,2.5vw,19px);line-height:1.66;max-width:620px;opacity:0}
   #introL2 b{color:#fafafa;font-weight:600}
-  #introSkip{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:11px;
-    letter-spacing:.06em;color:#6b6b6b;background:none;border:none;cursor:pointer;transition:color .2s}
+  #introSkip{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:5;font-family:var(--mono);font-size:11px;
+    letter-spacing:.06em;color:#9a9a9a;background:none;border:none;cursor:pointer;padding:8px 14px;transition:color .2s}
   #introSkip:hover{color:#cfcfcf}
   @media(prefers-reduced-motion:reduce){#intro{display:none}}
 </style>
@@ -386,41 +386,55 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
   gsap.set(l2,{yPercent:0,y:64,opacity:0});
   gsap.set(l1,{y:0,opacity:1}); l1.textContent=''; l1.classList.add('typing');
 
-  // Glassy pixel reveal — NOT black. A single frosted-glass sheet (one GPU-cheap
-  // backdrop-filter blur) sits over the hero, so the hero is visible-but-blurred the
-  // whole time. A tiny per-frame alpha mask clears the glass in pixel tiles from the
-  // top down: revealed tiles show the SHARP hero, unrevealed tiles stay frosted.
-  // No black, and it ends fully clear (mask empty) so removing the layer is invisible.
+  // Glassy pixel reveal — NOT black. Two stacked layers over the live hero:
+  //  (1) a real backdrop-filter BLUR sheet, cleared top->bottom by a tiny alpha mask
+  //      (frosts the hero where supported), and
+  //  (2) a DRAWN glass-tile canvas — translucent white squares with seams + a light
+  //      top edge highlight — so the pixel "glass tiles" are clearly visible on EVERY
+  //      device, including mobile Safari where masking a backdrop-filter can fail.
+  // Both clear from the top down over the same soft threshold; it ends fully clear so
+  // removing the layers is invisible (no sudden cut).
   let dissolveTween=null;
   function pixelDissolve(onDone){
-    const W=innerWidth, H=innerHeight;
-    const glass=document.createElement('div');
-    glass.style.cssText='position:fixed;inset:0;z-index:0;pointer-events:none;'+
-      'background:rgba(255,255,255,.05);will-change:mask-image;'+
-      '-webkit-backdrop-filter:blur(16px) saturate(1.35);backdrop-filter:blur(16px) saturate(1.35);'+
+    const W=innerWidth, H=innerHeight, dpr=Math.min(2, window.devicePixelRatio||1);
+    const blur=document.createElement('div');
+    blur.style.cssText='position:fixed;inset:0;z-index:0;pointer-events:none;will-change:mask-image;'+
+      '-webkit-backdrop-filter:blur(20px) saturate(1.5);backdrop-filter:blur(20px) saturate(1.5);'+
       '-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-size:100% 100%;mask-size:100% 100%;'+
       '-webkit-mask-mode:alpha;mask-mode:alpha';
-    intro.insertBefore(glass, intro.firstChild);        // behind the (now hidden) text
+    const tiles=document.createElement('canvas');
+    tiles.style.cssText='position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none';
+    tiles.width=Math.ceil(W*dpr); tiles.height=Math.ceil(H*dpr);
+    intro.insertBefore(tiles, intro.firstChild);        // tiles above blur
+    intro.insertBefore(blur, intro.firstChild);         // blur underneath
+    const tc=tiles.getContext('2d'); tc.scale(dpr,dpr);
     // crossfade the black backdrop out so the hero fades in (blurred) — no pop
     intro.style.transition='background .5s ease'; intro.style.background='transparent';
 
-    const cell=Math.max(18, Math.round(Math.min(W,H)/28));       // glass tile size
+    const cell=Math.max(22, Math.round(Math.min(W,H)/24));       // glass tile size (bigger = clearer)
     const cols=Math.ceil(W/cell), rows=Math.ceil(H/cell), spread=7, SS=4;
     const th=new Float32Array(cols*rows);
     for(let r=0;r<rows;r++)for(let c=0;c<cols;c++) th[r*cols+c]=(r+Math.random()*spread)/(rows+spread);
     const mc=document.createElement('canvas'); mc.width=cols*SS; mc.height=rows*SS;
     const mx=mc.getContext('2d');
-    const FADE=0.24;                                    // soft per-tile fade window (glassy melt)
+    const FADE=0.26;                                    // soft per-tile fade window (glassy melt)
     const obj={p:-FADE};
     dissolveTween=gsap.to(obj,{p:1+FADE,duration:3.0,ease:'sine.inOut',
       onUpdate:()=>{ const p=obj.p;
         mx.clearRect(0,0,mc.width,mc.height); mx.fillStyle='#fff';
-        for(let r=0;r<rows;r++){ const base=r*cols, y=r*SS; for(let c=0;c<cols;c++){
-          const a=(th[base+c]-p)/FADE;                  // 1 = full glass, 0..1 = melting, <=0 = clear
-          if(a>0){ mx.globalAlpha=a<1?a:1; mx.fillRect(c*SS, y, SS, SS); } } }
-        mx.globalAlpha=1;
+        tc.clearRect(0,0,W,H);
+        for(let r=0;r<rows;r++){ const rb=r*cols, my=r*SS, y=r*cell; for(let c=0;c<cols;c++){
+          const a=(th[rb+c]-p)/FADE; if(a<=0) continue;  // <=0 = fully clear (sharp hero)
+          const av=a<1?a:1, x=c*cell;
+          mx.globalAlpha=av; mx.fillRect(c*SS, my, SS, SS);          // blur-layer mask
+          // visible frosted glass tile
+          tc.globalAlpha=av*0.9;  tc.fillStyle='rgba(255,255,255,.14)'; tc.fillRect(x, y, cell, cell);
+          tc.globalAlpha=av*0.85; tc.fillStyle='rgba(255,255,255,.16)'; tc.fillRect(x, y, cell, 2);      // top highlight
+          tc.globalAlpha=av*0.5;  tc.strokeStyle='rgba(255,255,255,.12)'; tc.lineWidth=1; tc.strokeRect(x+0.5, y+0.5, cell-1, cell-1); // seam
+        } }
+        mx.globalAlpha=1; tc.globalAlpha=1;
         const url='url('+mc.toDataURL()+')';
-        glass.style.webkitMaskImage=url; glass.style.maskImage=url; },
+        blur.style.webkitMaskImage=url; blur.style.maskImage=url; },
       onComplete:onDone});
   }
 
@@ -436,7 +450,8 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
     .add(()=>pixelDissolve(finish));
   function skip(){ if(done) return; tl.kill(); if(dissolveTween) dissolveTween.kill(); finish(); }
   document.getElementById('introSkip').addEventListener('click',skip);
-  ['keydown','touchstart'].forEach(ev=>addEventListener(ev,skip,{once:true,passive:true}));
+  // only an explicit key skips automatically — a stray tap/scroll must NOT nuke the intro on mobile
+  addEventListener('keydown',skip,{once:true,passive:true});
   // safety: never leave a black screen stuck
   setTimeout(()=>{ if(!done) finish(); }, 12000);
 })();
