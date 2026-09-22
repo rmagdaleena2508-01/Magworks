@@ -385,17 +385,45 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
   gsap.registerPlugin(TextPlugin);
   gsap.set(l2,{yPercent:0,y:64,opacity:0});
   gsap.set(l1,{y:0,opacity:1}); l1.textContent=''; l1.classList.add('typing');
-  const tl=gsap.timeline({onComplete:finish});
+
+  // pixelated top-to-bottom dissolve of the black overlay -> reveals the hero.
+  // Canvas 2D mosaic (no extra lib): the black lives on a canvas; blocks clear
+  // row by row from the top with a soft fuzzy edge, tweened by GSAP for smoothness.
+  let dissolveTween=null;
+  function pixelDissolve(onDone){
+    const cv=document.createElement('canvas');
+    cv.style.cssText='position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none';
+    intro.insertBefore(cv, intro.firstChild);         // behind the (now hidden) text
+    const dpr=Math.min(2, window.devicePixelRatio||1);
+    const W=innerWidth, H=innerHeight;
+    cv.width=Math.ceil(W*dpr); cv.height=Math.ceil(H*dpr);
+    const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr);
+    const cell=Math.max(14, Math.round(Math.min(W,H)/34));  // pixel-block size
+    const cols=Math.ceil(W/cell), rows=Math.ceil(H/cell), spread=6;  // fuzzy edge (rows)
+    const th=new Float32Array(cols*rows);
+    for(let r=0;r<rows;r++)for(let c=0;c<cols;c++) th[r*cols+c]=(r+Math.random()*spread)/(rows+spread);
+    intro.style.background='transparent';             // hand the black to the canvas
+    ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H);
+    const obj={p:0};
+    dissolveTween=gsap.to(obj,{p:1.001,duration:1.15,ease:'power2.inOut',
+      onUpdate:()=>{ const p=obj.p; ctx.clearRect(0,0,W,H);
+        for(let r=0;r<rows;r++){ const base=r*cols; for(let c=0;c<cols;c++){
+          if(th[base+c]>p) ctx.fillRect(c*cell, r*cell, cell+1, cell+1); } } },
+      onComplete:onDone});
+  }
+
+  const tl=gsap.timeline();
   tl.to(l1,{duration:1.7,text:{value:LINE1,delimiter:''},ease:'none'})
     .add(()=>l1.classList.remove('typing'))
     .to(l1,{duration:0.6,y:-46,opacity:0,ease:'power2.in'},'+=0.55')
     .add(()=>{ l2.innerHTML=LINE2; })
     .to(l2,{duration:0.95,y:0,opacity:1,ease:'power3.out'},'-=0.1')
-    .to({},{duration:3.6})
-    .to(intro,{duration:0.7,opacity:0,ease:'power2.inOut'});
-  function skip(){ if(done) return; tl.progress(1); }
+    .to({},{duration:3.4})
+    .to(l2,{duration:0.5,y:-30,opacity:0,ease:'power1.in'})
+    .add(()=>pixelDissolve(finish));
+  function skip(){ if(done) return; tl.kill(); if(dissolveTween) dissolveTween.kill(); finish(); }
   document.getElementById('introSkip').addEventListener('click',skip);
-  ['keydown','wheel','touchstart'].forEach(ev=>addEventListener(ev,skip,{once:true,passive:true}));
+  ['keydown','touchstart'].forEach(ev=>addEventListener(ev,skip,{once:true,passive:true}));
   // safety: never leave a black screen stuck
   setTimeout(()=>{ if(!done) finish(); }, 12000);
 })();
