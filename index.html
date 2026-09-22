@@ -342,7 +342,7 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
   #intro{position:fixed;inset:0;z-index:2000;background:#000;display:flex;align-items:center;justify-content:center;padding:28px}
   #intro .intro-stage{position:relative;width:min(760px,92vw);min-height:200px;display:grid;place-items:center}
   #intro .intro-line{grid-area:1/1;margin:0;max-width:100%;text-align:center;will-change:transform,opacity}
-  #introL1{font-family:var(--serif);font-weight:400;color:#fafafa;font-size:clamp(28px,5.4vw,52px);line-height:1.15;letter-spacing:.01em}
+  #introL1{font-family:var(--serif);font-weight:400;color:#fafafa;font-size:clamp(28px,5.4vw,52px);line-height:1.25;letter-spacing:.01em;text-align:center}
   #introL1.typing::after{content:'▍';margin-left:.04em;color:#8fb3ff;animation:introCaret 1s steps(1) infinite}
   @keyframes introCaret{50%{opacity:0}}
   #introL2{font-family:var(--sans);color:#d4d4d4;font-size:clamp(15px,2.5vw,19px);line-height:1.66;max-width:620px;opacity:0}
@@ -380,11 +380,16 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
   }
   // plays on every load/reload (no session gate); only skipped for reduced-motion or if GSAP fails
   if(reduce || !window.gsap){ finish(); return; }
+  const IS_MOBILE = matchMedia('(max-width:680px)').matches;   // black dissolve on phones, glass on laptop
   document.documentElement.classList.add('intro-lock');
   window.scrollTo(0,0);
   gsap.registerPlugin(TextPlugin);
   gsap.set(l2,{yPercent:0,y:64,opacity:0});
-  gsap.set(l1,{y:0,opacity:1}); l1.textContent=''; l1.classList.add('typing');
+  gsap.set(l1,{y:0,opacity:1});
+  // reserve the FINAL wrapped height of line 1 up front, so when a word (e.g. "internet!")
+  // wraps to a 2nd line mid-typing the box does not grow and cause a reflow blink on mobile
+  l1.textContent=LINE1; l1.style.minHeight=l1.offsetHeight+'px'; l1.textContent='';
+  l1.classList.add('typing');
 
   // Glass pixelated top-to-bottom reveal. Two layers over the live hero:
   //  (1) a backdrop-filter BLUR sheet, cleared top->bottom by a tiny alpha mask, and
@@ -395,7 +400,39 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
   // backdrop is only handed off on the NEXT frame, so the hero can never flash before
   // the glass is in place. Ends fully clear -> invisible removal (no sudden cut).
   let dissolveTween=null;
-  function pixelDissolve(onDone){
+  // laptop = glass reveal; mobile = plain black pixel dissolve
+  function pixelDissolve(onDone){ (IS_MOBILE ? blackDissolve : glassDissolve)(onDone); }
+
+  // black pixelated top-to-bottom dissolve (mobile). Blocks fade over a soft window,
+  // top row first; covering frame drawn synchronously before the black bg is handed
+  // off, so the hero never flashes; ends fully clear (invisible removal).
+  function blackDissolve(onDone){
+    const cv=document.createElement('canvas');
+    cv.style.cssText='position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none';
+    intro.insertBefore(cv, intro.firstChild);
+    const dpr=Math.min(2, window.devicePixelRatio||1), W=innerWidth, H=innerHeight;
+    cv.width=Math.ceil(W*dpr); cv.height=Math.ceil(H*dpr);
+    const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr);
+    const cell=Math.max(16, Math.round(Math.min(W,H)/30));
+    const cols=Math.ceil(W/cell), rows=Math.ceil(H/cell), spread=7, FADE=0.22;
+    const th=new Float32Array(cols*rows);
+    for(let r=0;r<rows;r++)for(let c=0;c<cols;c++) th[r*cols+c]=(r+Math.random()*spread)/(rows+spread);
+    function draw(p){ ctx.clearRect(0,0,W,H); ctx.fillStyle='#000';
+      for(let r=0;r<rows;r++){ const rb=r*cols, y=r*cell; for(let c=0;c<cols;c++){
+        const a=(th[rb+c]-p)/FADE; if(a>0){ ctx.globalAlpha=a<1?a:1; ctx.fillRect(c*cell, y, cell+1, cell+1); } } }
+      ctx.globalAlpha=1; }
+    draw(-FADE);                                        // full black NOW, before revealing
+    requestAnimationFrame(()=>{ intro.style.background='transparent'; });
+    const obj={p:-FADE};
+    dissolveTween=gsap.to(obj,{p:1+FADE,duration:2.9,ease:'sine.inOut',
+      onUpdate:()=>draw(obj.p), onComplete:onDone});
+  }
+
+  // glass pixelated reveal (laptop) — two layers over the live hero:
+  //  (1) a backdrop-filter BLUR sheet, cleared top->bottom by a tiny alpha mask, and
+  //  (2) a DRAWN smoked glass-tile canvas (also obscures the hero). Covering frame
+  //      drawn synchronously before the black bg is handed off (no flash).
+  function glassDissolve(onDone){
     const dpr=Math.min(2, window.devicePixelRatio||1), W=innerWidth, H=innerHeight;
     const blur=document.createElement('div');
     blur.style.cssText='position:fixed;inset:0;z-index:0;pointer-events:none;will-change:mask-image;'+
