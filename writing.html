@@ -49,10 +49,13 @@
   .nav-inner{max-width:var(--wrap);margin:0 auto;height:52px;display:flex;align-items:center;justify-content:space-between;
     padding:0 24px;border-left:1px dashed var(--dash);border-right:1px dashed var(--dash)}
   .brand{font-family:var(--serif);font-size:22px;letter-spacing:.01em}
-  .nav-links{display:flex;align-items:center;gap:4px}
+  .nav-links{display:flex;align-items:center;gap:4px;position:relative}
   .nav-links a{font-size:13.5px;color:var(--muted);padding:8px 12px;border-radius:8px;transition:.2s}
   .nav-links a:hover{color:var(--fg);background:var(--card)}
   .nav-links a.active{color:var(--fg)}
+  .nav-ind{position:absolute;bottom:2px;left:0;height:1.5px;width:0;border-radius:2px;background:var(--accent);
+    opacity:0;transform:translateX(0);pointer-events:none;will-change:transform,width;
+    transition:transform .3s cubic-bezier(.4,0,.2,1),width .3s cubic-bezier(.4,0,.2,1),opacity .2s ease}
   .nav-right{display:flex;align-items:center;gap:6px}
   .icon-btn{width:34px;height:34px;display:grid;place-items:center;border:1px solid var(--border);border-radius:9px;color:var(--muted);transition:.2s}
   .icon-btn:hover{color:var(--fg);border-color:var(--border-2);background:var(--card)}
@@ -129,6 +132,7 @@
       <a href="./index.html#projects">Projects</a>
       <a href="./index.html#stack">Stack</a>
       <a href="./writing.html" class="active">Writing</a>
+      <span class="nav-ind" aria-hidden="true"></span>
     </nav>
     <div class="nav-right">
       <button class="icon-btn theme-toggle" id="themeBtn" aria-label="Toggle theme" title="Toggle theme">
@@ -225,6 +229,24 @@ themeBtn.onclick=()=>{
 };
 
 // mobile nav
+// sliding nav underline — rests under the current page's link, glides to any link you hover
+(function(){
+  const nav=document.querySelector('.nav-links'), ind=nav&&nav.querySelector('.nav-ind');
+  if(!nav||!ind) return;
+  const links=[...nav.querySelectorAll('a')];
+  const active=nav.querySelector('a.active')||links[0];
+  function place(link,animate){
+    if(!animate){ const t=ind.style.transition; ind.style.transition='none'; move(link); void ind.offsetWidth; ind.style.transition=t; }
+    else move(link);
+  }
+  function move(link){ ind.style.width=Math.max(0,link.offsetWidth-24)+'px';
+    ind.style.transform='translateX('+(link.offsetLeft+12)+'px)'; ind.style.opacity='1'; }
+  links.forEach(a=>{ a.addEventListener('mouseenter',()=>move(a));
+    a.addEventListener('mouseleave',()=>move(active)); });
+  place(active,false);
+  addEventListener('resize',()=>place(nav.querySelector('a.active')||active,false));
+})();
+
 const mnavStyle = document.createElement('style');
 mnavStyle.textContent = `header{perspective:1100px}
 .mnav{display:flex;flex-direction:column;gap:2px;padding:8px 16px 14px;transform-origin:top center;transform:rotateX(-88deg);opacity:0;max-height:0;overflow:hidden;pointer-events:none;transform-style:preserve-3d;will-change:transform,max-height;transition:transform .55s cubic-bezier(.33,1,.68,1),opacity .4s ease,max-height .55s cubic-bezier(.33,1,.68,1);background:linear-gradient(180deg,rgba(44,44,50,.55),rgba(12,12,15,.62));-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4);border-bottom:1px solid rgba(255,255,255,.13);box-shadow:0 16px 34px -12px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,255,255,.09)}
