@@ -100,8 +100,6 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
   .profile-main{flex:1;min-width:0}
   .ptop{display:flex;align-items:center;justify-content:space-between;gap:12px}
   .pname{font-family:var(--serif);font-size:32px;line-height:1.1}
-  .views{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:12px;color:var(--muted-2);flex:none}
-  .views svg{width:14px;height:14px}
   .role{margin-top:6px;font-size:16px;font-weight:600;color:var(--muted);min-height:22px}
   .loc{margin-top:2px;font-size:12.5px;color:var(--muted-2)}
 
@@ -325,9 +323,8 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
         </button>
         <div class="ptop">
           <div class="pname">Magdaleena</div>
-          <div class="views"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg><span id="viewCount">—</span></div>
         </div>
-        <div class="role" id="roleText">AI Frontend Engineer</div>
+        <div class="role" id="roleText">Software Engineer</div>
         <div class="loc">CS @ SRMIST · AI Engineer · India</div>
       </div>
     </div>
@@ -513,11 +510,11 @@ const TESTIMONIALS = [
     src:'LinkedIn recommendation · May 10, 2026 · mentored Magdaleena at GSSoC',
     linkedin:'https://www.linkedin.com/in/edward7780/' },
   { name:'Venumadhavan', role:'Co-founder, Upstride', init:'V', color:'#f472b6',
-    quote:"All the things you're doing seriously amaze me. Your hard work and commitment towards posting and engaging are commendable.",
+    quote:"The way you put in hard work and commitment towards posting and engaging in our WhatsApp community groups and LinkedIn as a growth intern are commendable.",
     src:'WhatsApp message',
     linkedin:'https://www.linkedin.com/in/venu-madhavan-cs-860a692a5/' },
   { name:'Senthilnathan T', role:'AI + ML · IIT Madras', init:'S', color:'#a78bfa',
-    quote:'Just wanted to drop by and say that you have got a really cool profile (that too for a freshie)! Keep up the awesome work and my best wishes for your future!!',
+    quote:'You have got a really cool profile (that too for a freshie)! Keep up the awesome work.',
     src:'LinkedIn message',
     linkedin:'https://www.linkedin.com/in/senthilnathan-t/' },
 ];
@@ -525,26 +522,7 @@ const TESTIMONIALS = [
 /* ---------------- render helpers ---------------- */
 const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e};
 
-// rotating role text
-// [text, dwell ms] — Software Engineer + AI Frontend Engineer linger longer
-const ROLES = [['AI Frontend Engineer',4200],['Software Engineer',4200],['Multi-Agent Systems Builder',2800]];
-let ri=0; const roleEl=document.getElementById('roleText');
-roleEl.textContent=ROLES[0][0]; roleEl.style.transition='opacity .25s';
-(function cycle(){ setTimeout(()=>{ ri=(ri+1)%ROLES.length; roleEl.style.opacity=0; setTimeout(()=>{ roleEl.textContent=ROLES[ri][0]; roleEl.style.opacity=1; },250); cycle(); }, ROLES[ri][1]); })();
-
-// view counter — ONE shared cross-device count via Abacus (returns {value:N}).
-// Same total on laptop and mobile; never shows NaN (guards a bad/failed response).
-(function views(){
-  const out = document.getElementById('viewCount');
-  if(!out) return;
-  fetch('https://abacus.jasoncameron.dev/hit/magworks-mag/site-views')
-    .then(r=>r.json())
-    .then(d=>{
-      const n = Number(d && d.value);
-      out.textContent = Number.isFinite(n) ? n.toLocaleString() : '—';
-    })
-    .catch(()=>{ out.textContent = '—'; });
-})();
+// role text — single fixed title (static markup, no rotation)
 
 // contact icons
 const cRow=document.getElementById('contactRow');
