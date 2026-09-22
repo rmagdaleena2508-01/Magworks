@@ -750,6 +750,9 @@ function techTip(name){
 // one shared tooltip element, positioned + clamped to the viewport on show
 const techtip=el('div','techtip'); techtip.setAttribute('aria-hidden','true'); document.body.appendChild(techtip);
 const COARSE = matchMedia('(hover:none)').matches || !matchMedia('(hover:hover)').matches;
+// hint matches the device: hover on laptop, tap on phone
+const hintEl=document.querySelector('.stack-head .hint');
+if(hintEl) hintEl.textContent = COARSE ? '( tap a pill to see where I use it )' : '( hover a pill to see where I use it )';
 let tipFor=null;
 function showTip(pill){
   techtip.innerHTML = pill._tip;
