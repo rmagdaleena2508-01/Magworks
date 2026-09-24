@@ -412,12 +412,12 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
   // the glass is in place. Ends fully clear -> invisible removal (no sudden cut).
   let dissolveTween=null;
   // laptop = glass reveal; mobile = plain black pixel dissolve
-  function pixelDissolve(onDone){ (IS_MOBILE ? blackDissolve : glassDissolve)(onDone); }
+  function pixelDissolve(onDone,dur){ (IS_MOBILE ? blackDissolve : glassDissolve)(onDone,dur); }
 
   // black pixelated top-to-bottom dissolve (mobile). Blocks fade over a soft window,
   // top row first; covering frame drawn synchronously before the black bg is handed
   // off, so the hero never flashes; ends fully clear (invisible removal).
-  function blackDissolve(onDone){
+  function blackDissolve(onDone,dur){
     const cv=document.createElement('canvas');
     cv.style.cssText='position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none';
     intro.insertBefore(cv, intro.firstChild);
@@ -435,7 +435,7 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
     draw(-FADE);                                        // full black NOW, before revealing
     requestAnimationFrame(()=>{ intro.style.background='transparent'; });
     const obj={p:-FADE};
-    dissolveTween=gsap.to(obj,{p:1+FADE,duration:2.9,ease:'sine.inOut',
+    dissolveTween=gsap.to(obj,{p:1+FADE,duration:(dur||2.9),ease:'sine.inOut',
       onUpdate:()=>draw(obj.p), onComplete:onDone});
   }
 
@@ -443,7 +443,7 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
   //  (1) a backdrop-filter BLUR sheet, cleared top->bottom by a tiny alpha mask, and
   //  (2) a DRAWN smoked glass-tile canvas (also obscures the hero). Covering frame
   //      drawn synchronously before the black bg is handed off (no flash).
-  function glassDissolve(onDone){
+  function glassDissolve(onDone,dur){
     const dpr=Math.min(2, window.devicePixelRatio||1), W=innerWidth, H=innerHeight;
     const blur=document.createElement('div');
     blur.style.cssText='position:fixed;inset:0;z-index:0;pointer-events:none;will-change:mask-image;'+
@@ -479,7 +479,7 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
     draw(-FADE);                                        // full glass NOW, before revealing anything
     requestAnimationFrame(()=>{ intro.style.background='transparent'; }); // hand off black only once glass is painted
     const obj={p:-FADE};
-    dissolveTween=gsap.to(obj,{p:1+FADE,duration:2.9,ease:'sine.inOut',
+    dissolveTween=gsap.to(obj,{p:1+FADE,duration:(dur||2.9),ease:'sine.inOut',
       onUpdate:()=>draw(obj.p), onComplete:onDone});
   }
 
@@ -489,7 +489,8 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
   const PER=0.075;                       // seconds per character (~13 cps, human-ish)
   const nObj={n:0};
   let dissolveStarted=false;
-  const startDissolve=()=>{ dissolveStarted=true; pixelDissolve(finish); };
+  const skipBtn=document.getElementById('introSkip');
+  const startDissolve=(dur)=>{ dissolveStarted=true; if(skipBtn) skipBtn.style.display='none'; pixelDissolve(finish, dur); };
   const tl=gsap.timeline();
   tl.to(nObj,{n:LINE1A.length, duration:LINE1A.length*PER, ease:'none', onUpdate:()=>revealTo(nObj.n)})   // "Welcome"
     .to(nObj,{n:chars.length, duration:(chars.length-LINE1A.length)*PER, ease:'none', onUpdate:()=>revealTo(nObj.n)}, '+=0.55') // pause, then the rest + "!"
@@ -500,11 +501,12 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
     .to({},{duration:3.4})
     .to(l2,{duration:0.5,y:-30,opacity:0,ease:'power1.in'})
     .add(startDissolve);
-  // Skip: jump past the TEXT but still play the dissolve transition before the hero.
+  // Skip: hide the button immediately, jump past the TEXT, and play a QUICK dissolve.
   function skip(){ if(done) return;
+    if(skipBtn) skipBtn.style.display='none';
     if(dissolveStarted){ if(dissolveTween) dissolveTween.progress(1); return; }  // already transitioning -> fast-forward
-    tl.kill(); clearCaret(); gsap.set([l1,l2],{opacity:0}); startDissolve(); }
-  document.getElementById('introSkip').addEventListener('click',skip);
+    tl.kill(); clearCaret(); gsap.set([l1,l2],{opacity:0}); startDissolve(0.8); }   // fast dissolve on skip
+  if(skipBtn) skipBtn.addEventListener('click',skip);
   // only an explicit key skips automatically — a stray tap/scroll must NOT nuke the intro on mobile
   addEventListener('keydown',skip,{once:true,passive:true});
   // safety: never leave a black screen stuck (long enough to never clip the dissolve)
