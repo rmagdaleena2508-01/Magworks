@@ -505,7 +505,7 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
   function skip(){ if(done) return;
     if(skipBtn) skipBtn.style.display='none';
     if(dissolveStarted){ if(dissolveTween) dissolveTween.progress(1); return; }  // already transitioning -> fast-forward
-    tl.kill(); clearCaret(); gsap.set([l1,l2],{opacity:0}); startDissolve(0.8); }   // fast dissolve on skip
+    tl.kill(); clearCaret(); gsap.set([l1,l2],{opacity:0}); startDissolve(); }   // same-speed dissolve as normal
   if(skipBtn) skipBtn.addEventListener('click',skip);
   // only an explicit key skips automatically — a stray tap/scroll must NOT nuke the intro on mobile
   addEventListener('keydown',skip,{once:true,passive:true});
