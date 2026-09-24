@@ -44,9 +44,14 @@ The portfolio started as a plain static page. Over the course of development it 
 - Projects: CubeSight, CSI SRMIST VDP, Financial Advisory Agents, ProblemBase — each with a one-line summary, live/repo links, and tech tags.
 
 ### Profile & interactions
-- **Job title** — a single, clear title ("Software Engineer") under the name.
-- **Avatar** — one illustrated profile image (the old photo-swap toggle and the extra photo were removed to keep it simple).
-- **"Now" strip** — one short line under the profile that says what Magdaleena is doing right now (interning, building, learning). It is meant to be edited about once a month.
+- **Job title** — a single, clear line under the name: "18 yo, Software Engineer".
+- **Avatar** — one illustrated profile image (the old photo-swap toggle and the extra photo were removed to keep it simple). The same avatar is reused as the site's brand mark (see below).
+- **"Now" strip** — one short line under the profile that says what Magdaleena is doing right now (interning, building). It is meant to be edited about once a month.
+
+### Page identity & sharing (the avatar as a brand mark)
+- *What:* the site is titled **"Magdaleena, a builder with high agency"** (the text you see on the browser tab), and the **avatar illustration is reused as the recognizable mark**: it is the **favicon** (the little icon in the browser tab and in bookmarks) on all three pages, and it is the image on the **link-preview card** when the site is shared.
+- *Why:* one repeated graphic makes people tie that face to "Magdaleena" — a small, free way to feel like a brand instead of a generic page.
+- *How:* the favicon and Apple touch icon point at `assets/avatar.jpeg`; **Open Graph** and **Twitter** meta tags in `index.html`'s `<head>` set the shared title, description, and image (the image uses an absolute URL so preview cards can load it). Note: sites like X, LinkedIn, and Slack cache these cards, so a first share may show the old one until their cache refreshes.
 
 ### Theme toggle
 - Rebuilt the light/dark toggle to use the **View Transitions API** for a smooth single-corner circular reveal that fills the page (GPU-composited, no latency), with a sun/moon icon morph. *Why:* the plain instant flip felt abrupt; the reveal is smooth and works across all pages. Falls back to an instant toggle where unsupported or when reduced-motion is set. The site **always opens in dark mode** by default.
@@ -108,6 +113,7 @@ This is a **no-framework** site by design (fast, zero build, easy to host anywhe
 | Sound | **Web Audio API** (native) — a soft pop on the theme toggle |
 | Intro animation | **GSAP** (CDN) — character-index typewriter (human pace, no blink) for the two-beat line, slide-in second line, then a pixelated top-to-bottom reveal chosen by device — **glass** on laptop (`backdrop-filter: blur()` + drawn smoked-glass tile canvas), plain **black** dissolve on phones — per-block soft fade, slow `sine.inOut` ~2.9s; covering frame pre-drawn to avoid a hero flash; line-1 height reserved to avoid a mobile typing reflow; plays every load, key/button skip, off for reduced-motion |
 | Hero banner | Pre-rendered looping **MP4** in `assets/` |
+| Favicon & share card | Avatar image as `<link rel="icon">` + `apple-touch-icon`, plus **Open Graph** / **Twitter** meta (absolute image URL) so the tab icon and link previews use the avatar and the "high agency" title |
 
 ### "Backend" (there is no server — external APIs called from the browser)
 | Feature | Service |
