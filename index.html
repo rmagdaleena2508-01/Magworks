@@ -343,7 +343,12 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
   #intro .intro-stage{position:relative;width:min(760px,92vw);min-height:200px;display:grid;place-items:center}
   #intro .intro-line{grid-area:1/1;margin:0;max-width:100%;text-align:center;will-change:transform,opacity}
   #introL1{font-family:var(--serif);font-weight:400;color:#fafafa;font-size:clamp(28px,5.4vw,52px);line-height:1.25;letter-spacing:.01em;text-align:center}
-  #introL1.typing::after{content:'▍';margin-left:.04em;color:#8fb3ff;animation:introCaret 1s steps(1) infinite}
+  /* fixed-layout typewriter: every char is laid out from the start (hidden), so revealing
+     them never reflows/re-wraps — kills the "internet" wrap blink on mobile */
+  #introL1 .tch{visibility:hidden}
+  #introL1 .tch.on{visibility:visible}
+  #introL1 .tch.caret{position:relative}
+  #introL1 .tch.caret::after{content:'▍';position:absolute;left:100%;top:0;color:#8fb3ff;animation:introCaret 1s steps(1) infinite}
   @keyframes introCaret{50%{opacity:0}}
   #introL2{font-family:var(--sans);color:#d4d4d4;font-size:clamp(15px,2.5vw,19px);line-height:1.66;max-width:620px;opacity:0}
   #introL2 b{color:#fafafa;font-weight:600}
@@ -386,10 +391,16 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
   gsap.registerPlugin(TextPlugin);
   gsap.set(l2,{yPercent:0,y:64,opacity:0});
   gsap.set(l1,{y:0,opacity:1});
-  // reserve the FINAL wrapped height of line 1 up front, so when a word (e.g. "internet!")
-  // wraps to a 2nd line mid-typing the box does not grow and cause a reflow blink on mobile
-  l1.textContent=LINE1; l1.style.minHeight=l1.offsetHeight+'px'; l1.textContent='';
-  l1.classList.add('typing');
+  // lay out EVERY character up front (hidden) so the browser fixes the wrap once; typing
+  // only flips chars visible, so the line never reflows/re-wraps mid-type (no blink)
+  l1.textContent='';
+  const chars=[...LINE1].map(ch=>{ const s=document.createElement('span'); s.className='tch'; s.textContent=ch; l1.appendChild(s); return s; });
+  let lastCaret=-1;
+  function revealTo(nf){ const n=Math.round(nf);
+    for(let i=0;i<chars.length;i++) chars[i].classList.toggle('on', i<n);
+    const ci=Math.min(n,chars.length)-1;
+    if(ci!==lastCaret){ if(chars[lastCaret]) chars[lastCaret].classList.remove('caret'); if(ci>=0&&chars[ci]) chars[ci].classList.add('caret'); lastCaret=ci; } }
+  function clearCaret(){ if(chars[lastCaret]) chars[lastCaret].classList.remove('caret'); }
 
   // Glass pixelated top-to-bottom reveal. Two layers over the live hero:
   //  (1) a backdrop-filter BLUR sheet, cleared top->bottom by a tiny alpha mask, and
@@ -477,23 +488,27 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
   // reveals via slice(), so it never clears/re-inserts — smooth on every device.
   const PER=0.075;                       // seconds per character (~13 cps, human-ish)
   const nObj={n:0};
-  const renderType=()=>{ l1.textContent=LINE1.slice(0, Math.round(nObj.n)); };
+  let dissolveStarted=false;
+  const startDissolve=()=>{ dissolveStarted=true; pixelDissolve(finish); };
   const tl=gsap.timeline();
-  tl.to(nObj,{n:LINE1A.length, duration:LINE1A.length*PER, ease:'none', onUpdate:renderType})   // "Welcome"
-    .to(nObj,{n:LINE1.length, duration:(LINE1.length-LINE1A.length)*PER, ease:'none', onUpdate:renderType}, '+=0.55') // pause, then the rest + "!"
-    .add(()=>l1.classList.remove('typing'))
+  tl.to(nObj,{n:LINE1A.length, duration:LINE1A.length*PER, ease:'none', onUpdate:()=>revealTo(nObj.n)})   // "Welcome"
+    .to(nObj,{n:chars.length, duration:(chars.length-LINE1A.length)*PER, ease:'none', onUpdate:()=>revealTo(nObj.n)}, '+=0.55') // pause, then the rest + "!"
+    .add(clearCaret)
     .to(l1,{duration:0.6,y:-46,opacity:0,ease:'power2.in'},'+=0.6')
     .add(()=>{ l2.innerHTML=LINE2; })
     .to(l2,{duration:0.95,y:0,opacity:1,ease:'power3.out'},'-=0.1')
     .to({},{duration:3.4})
     .to(l2,{duration:0.5,y:-30,opacity:0,ease:'power1.in'})
-    .add(()=>pixelDissolve(finish));
-  function skip(){ if(done) return; tl.kill(); if(dissolveTween) dissolveTween.kill(); finish(); }
+    .add(startDissolve);
+  // Skip: jump past the TEXT but still play the dissolve transition before the hero.
+  function skip(){ if(done) return;
+    if(dissolveStarted){ if(dissolveTween) dissolveTween.progress(1); return; }  // already transitioning -> fast-forward
+    tl.kill(); clearCaret(); gsap.set([l1,l2],{opacity:0}); startDissolve(); }
   document.getElementById('introSkip').addEventListener('click',skip);
   // only an explicit key skips automatically — a stray tap/scroll must NOT nuke the intro on mobile
   addEventListener('keydown',skip,{once:true,passive:true});
-  // safety: never leave a black screen stuck
-  setTimeout(()=>{ if(!done) finish(); }, 12000);
+  // safety: never leave a black screen stuck (long enough to never clip the dissolve)
+  setTimeout(()=>{ if(!done) finish(); }, 16000);
 })();
 </script>
 
