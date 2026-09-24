@@ -617,7 +617,7 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
 
   <div class="row">
     <div class="row-inner rv" id="stack">
-      <div class="stack-head"><h2 class="sec">Tech Stack</h2><span class="hint">( hover a pill to see where I use it )</span></div>
+      <div class="stack-head"><h2 class="sec">Tech Stack</h2><span class="hint">( hover a pill — hear a note, see where I use it )</span></div>
       <div class="filters" id="filters"></div>
       <div class="pills" id="stackPills"></div>
     </div>
@@ -937,7 +937,7 @@ const techtip=el('div','techtip'); techtip.setAttribute('aria-hidden','true'); d
 const COARSE = matchMedia('(hover:none)').matches || !matchMedia('(hover:hover)').matches;
 // hint matches the device: hover on laptop, tap on phone
 const hintEl=document.querySelector('.stack-head .hint');
-if(hintEl) hintEl.textContent = COARSE ? '( tap a pill to see where I use it )' : '( hover a pill to see where I use it )';
+if(hintEl) hintEl.textContent = COARSE ? '( tap a pill — hear a note, see where I use it )' : '( hover a pill — hear a note, see where I use it )';
 let tipFor=null;
 function showTip(pill){
   techtip.innerHTML = pill._tip;
@@ -966,14 +966,15 @@ function renderPills(cat){
       : (slug ? `<img src="${SI(slug)}" alt="" loading="lazy" onerror="this.remove()"/>` : '');
     p.innerHTML = icon + name;
     p._tip = techTip(name);
+    const note=()=>playXylo(NOTE_INDEX[name] ?? 0);   // xylophone note per pill
     if(COARSE){
-      // touch: tap toggles the tooltip
-      p.addEventListener('click',e=>{ e.stopPropagation();
+      // touch: tap plays a note + toggles the tooltip
+      p.addEventListener('click',e=>{ e.stopPropagation(); note();
         if(tipFor===p){ hideTip(); } else { p.classList.add('tapped'); showTip(p); } });
     } else {
-      p.addEventListener('mouseenter',()=>showTip(p));
+      p.addEventListener('mouseenter',()=>{ note(); showTip(p); });
       p.addEventListener('mouseleave',hideTip);
-      p.addEventListener('focus',()=>showTip(p));
+      p.addEventListener('focus',()=>{ note(); showTip(p); });
       p.addEventListener('blur',hideTip);
     }
     pillsEl.appendChild(p);
