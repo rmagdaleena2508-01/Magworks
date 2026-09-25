@@ -22,7 +22,7 @@ Or open `index.html` directly in a browser.
 
 | File | Purpose |
 |------|---------|
-| `index.html` | Home — hero, profile, about, projects, tech stack, GitHub activity, highlights, achievements, CTA, footer |
+| `index.html` | Home — hero, profile, about, projects, tech stack, GitHub activity, highlights, achievements, build log, CTA, footer |
 | `writing.html` | Blog / writing list (technical notes + tips for college and internships) |
 | `contact.html` | Contact form (message box + prompt chips) that delivers straight to email |
 
@@ -83,6 +83,7 @@ The page used to just sit there. We added small things that answer back when you
 - **Tech Stack** — filterable pills (All / Frontend / Backend / AI & Agents / Tools) with brand icons; a few icons are inlined as SVG (`currentColor`) so they stay visible in both themes. **Hover a pill (laptop) or tap it (phone) to show a tooltip** with the tech's category and which real projects on the page use it (built from the live `PROJECTS` data, so it is always accurate). The tooltip is a single shared element positioned in JS and clamped to the viewport, so it never overflows the screen edge.
 - **GitHub Activity** — a real contribution heatmap rendered client-side using GitHub's exact green scale.
 - **Highlights** — an auto-scrolling testimonial marquee; clicking the arrows stops it and snaps one card centered, then auto-resumes after a few seconds. Each card links to the person's LinkedIn to let visitors verify it.
+- **Build log** — a short, honest changelog of the site itself ("what I changed and why"), rendered as a dated timeline from a `CHANGELOG` array. *Why:* the site is a live project that has been iterated a lot; showing that in the open signals persistence and taste, which a static résumé can't.
 - **Writing** page added for technical posts.
 - **Contact** page with a two-box form (purpose + details) that delivers to email.
 
@@ -143,6 +144,7 @@ Open `index.html` and edit the data arrays near the bottom:
 - `TESTIMONIALS` — highlight cards (name, role, quote, LinkedIn)
 - `CHANNELS` — contact/social links
 - `ICONS` — inline SVG icons for techs whose logo needs to stay theme-visible
+- `CHANGELOG` — build-log entries (`[date, title, what/why]`), newest first
 
 Assets (avatar, project thumbnails, banner) live in `assets/`.
 

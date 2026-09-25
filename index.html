@@ -300,7 +300,16 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
   @media(max-width:560px){.nowbar{border-radius:14px}}
 
   /* ---- active nav link ---- */
-  #about,#contact,#projects,#stack{scroll-margin-top:64px}
+  #about,#contact,#projects,#stack,#buildlog{scroll-margin-top:64px}
+  /* ---- build log ---- */
+  .buildlog-note{font-family:var(--mono);font-size:11.5px;line-height:1.5;color:var(--muted-2);margin-bottom:16px}
+  .buildlog{display:flex;flex-direction:column}
+  .blog-item{display:grid;grid-template-columns:104px 1fr;gap:16px;padding:14px 0;border-top:1px dashed var(--dash);align-items:baseline}
+  .blog-item:first-child{border-top:none}
+  .blog-date{font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--muted-2);white-space:nowrap}
+  .blog-t{font-weight:600;color:var(--fg);font-size:14.5px}
+  .blog-w{color:var(--muted);font-size:13.5px;margin-top:3px;line-height:1.55}
+  @media(max-width:560px){.blog-item{grid-template-columns:1fr;gap:3px;padding:12px 0}}
   .nav-links{position:relative}
   .nav-links a.active{color:var(--fg)}
   .nav-ind{position:absolute;bottom:2px;left:0;height:1.5px;width:0;border-radius:2px;background:var(--accent);
@@ -667,6 +676,14 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
   </div>
 
   <div class="row">
+    <div class="row-inner rv" id="buildlog">
+      <h2 class="sec">Build log</h2>
+      <div class="buildlog-note">This site is a live project — I keep breaking and improving it in the open. A few recent changes and why:</div>
+      <div class="buildlog" id="buildlogList"></div>
+    </div>
+  </div>
+
+  <div class="row">
     <div class="row-inner rv">
       <h2 class="sec cta-title">Still Scrolling?</h2>
       <div class="cta">
@@ -982,6 +999,24 @@ function renderPills(cat){
 }
 renderPills('all');
 
+// build log — a short, honest changelog of this site (newest first)
+const CHANGELOG=[
+  ['Sep 2026','Cinematic intro','Typed two-beat welcome, then a pixelated glass reveal (black on phones) into the hero — a first impression that is mine, not a template.'],
+  ['Sep 2026','Made the site a brand','Reused my avatar as the favicon and link-share card, and set the title to "a builder with high agency."'],
+  ['Sep 2026','Tech pills that talk back','Hover or tap a pill for a xylophone note and the real projects on this page that use that tool.'],
+  ['Sep 2026','Nav that tracks the scroll','One underline that glides between links in real time, ordered to the page; fixed it skipping the short Contact section.'],
+  ['Sep 2026','Command palette (⌘K)','Keyboard jump to any section, page, or link — built like a tool an engineer would use.'],
+  ['Sep 2026','Feel, not noise','Cursor spotlight, card tilt, magnetic buttons, and a progressive blur under the nav.'],
+  ['Sep 2026','Cut the vanity','Removed the view counter and the photo-swap toggle; kept only what tells the truth.'],
+  ['Sep 2026','Paper-fold mobile menu','A liquid-glass menu that folds open top-to-bottom and closes bottom-to-top.'],
+  ['Sep 2026','Always land on the hero','Every visit starts at the top, no matter where the last visitor left off.'],
+];
+(function(){ const box=document.getElementById('buildlogList'); if(!box) return;
+  CHANGELOG.forEach(([d,t,w])=>{ const it=el('div','blog-item');
+    it.innerHTML='<div class="blog-date">'+d+'</div><div><div class="blog-t">'+t+'</div><div class="blog-w">'+w+'</div></div>';
+    box.appendChild(it); });
+})();
+
 // testimonials marquee (duplicated for seamless loop)
 const track=document.getElementById('mtrack');
 function tcard(t){
@@ -1233,6 +1268,7 @@ const CMDS=[
   {g:'#',label:'About',sub:'section',run:()=>jumpTo('#about')},
   {g:'#',label:'Projects',sub:'section',run:()=>jumpTo('#projects')},
   {g:'#',label:'Tech Stack',sub:'section',run:()=>jumpTo('#stack')},
+  {g:'#',label:'Build log',sub:'section',run:()=>jumpTo('#buildlog')},
   {g:'#',label:'Contact',sub:'section',run:()=>jumpTo('#contact')},
   {g:'→',label:'Writing',sub:'page',run:()=>goTo('./writing.html')},
   {g:'→',label:'Contact form',sub:'page',run:()=>goTo('./contact.html')},
