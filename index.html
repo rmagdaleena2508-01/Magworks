@@ -67,7 +67,9 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
     border-bottom:1px dashed var(--dash)}
   .nav-inner{max-width:var(--wrap);margin:0 auto;height:52px;display:flex;align-items:center;justify-content:space-between;
     padding:0 24px;border-left:1px dashed var(--dash);border-right:1px dashed var(--dash)}
-  .brand{font-family:var(--serif);font-size:22px;letter-spacing:.01em}
+  .brand{display:inline-flex;align-items:center;line-height:0}
+  .brand img{height:30px;width:auto;display:block}
+  @media(max-width:560px){.brand img{height:26px}}
   .nav-links{display:flex;align-items:center;gap:4px}
   .nav-links a{font-size:13.5px;color:var(--muted);padding:8px 12px;border-radius:8px;transition:.2s}
   .nav-links a:hover{color:var(--fg);background:var(--card)}
@@ -537,7 +539,7 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
 
 <header>
   <div class="nav-inner">
-    <a class="brand" href="#top">Magdaleena</a>
+    <a class="brand" href="#top" aria-label="Magdaleena"><img src="./assets/brand-sticker.png" alt="Magdaleena" /></a>
     <nav class="nav-links">
       <a href="#top">Home</a>
       <a href="#contact">Contact</a>
