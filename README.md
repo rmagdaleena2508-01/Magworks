@@ -48,7 +48,7 @@ The portfolio started as a plain static page. Over the course of development it 
 - **Avatar** — one illustrated profile image (the old photo-swap toggle and the extra photo were removed to keep it simple). The same avatar is reused as the site's brand mark (see below).
 - **"Now" strip** — one short line under the profile that says what Magdaleena is doing right now (interning, building). It is meant to be edited about once a month.
 - **Live local time** — a ticking **India (IST)** clock sits beside the location line (`Asia/Kolkata`, updated every second), so the profile feels live.
-- **Balanced profile** — the avatar + name/role/location sit as one **centered group** (equal space left and right, avatar vertically centered with the text), instead of hugging the left with an empty right side. On phones the avatar and name also scale down, so the top section stays tidy and proportionate.
+- **Balanced profile** — the avatar + name/role/location are **left-aligned** with **equal top and bottom spacing**. The fixed nav is taller than a flat `52px`, so `<main>`'s top padding is set to the header's real measured height (on load + resize); without that the first section sat *under* the header and the gap above the avatar was smaller than the gap below. On phones the avatar and name scale down so the top section stays tidy.
 
 ### Page identity & sharing (the avatar as a brand mark)
 - *What:* the site is titled **"Magdaleena, a builder with high agency"** (the text you see on the browser tab), and the **avatar illustration is reused as the recognizable mark**: it is the **favicon** (the little icon in the browser tab and in bookmarks) on all three pages, and it is the image on the **link-preview card** when the site is shared.

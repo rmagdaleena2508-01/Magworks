@@ -98,8 +98,7 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
 
 
   /* ---- profile ---- */
-  .profile{display:flex;gap:20px;align-items:center;justify-content:center}
-  .profile-main{flex:0 1 auto !important}
+  .profile{display:flex;gap:20px;align-items:center}
   @media(max-width:560px){
     .profile{gap:14px}
     .avatar{width:64px !important;height:64px !important;border-radius:14px}
@@ -817,6 +816,13 @@ const TESTIMONIALS = [
 const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e};
 
 // role text — single fixed title (static markup, no rotation)
+
+// keep the first section clear of the fixed header — pad <main> to the header's real
+// height so the profile's top gap matches its bottom gap (was overlapped -> looked uneven)
+(function(){ const h=document.querySelector('header'), m=document.querySelector('main'); if(!h||!m) return;
+  const set=()=>{ m.style.paddingTop=Math.ceil(h.getBoundingClientRect().height)+'px'; };
+  set(); addEventListener('resize',set); addEventListener('load',set);
+})();
 
 // live local time (India / IST) beside the location
 (function(){ const clk=document.getElementById('clock'); if(!clk) return;
