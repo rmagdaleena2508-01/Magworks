@@ -151,7 +151,8 @@
   @keyframes tprog{from{transform:scaleX(1)}to{transform:scaleX(0)}}
   @media(max-width:560px){.toast{top:auto;bottom:20px;right:14px;left:14px;max-width:none}}
   /* progressive blur under the fixed nav (top edge) + bottom edge — mobile + laptop */
-  .scroll-blur{position:fixed;top:0;left:0;right:0;height:104px;z-index:95;pointer-events:none}
+  .scroll-blur{position:fixed;top:0;left:0;right:0;height:104px;z-index:95;pointer-events:none;opacity:0;transition:opacity .3s ease}
+  .scroll-blur.on{opacity:1}
   .scroll-blur>div{position:absolute;inset:0;
     -webkit-backdrop-filter:blur(var(--b));backdrop-filter:blur(var(--b))}
   .scroll-blur>div{-webkit-mask-image:linear-gradient(to bottom,#000 0,#000 var(--m),transparent calc(var(--m) + 12%));
@@ -424,5 +425,6 @@ document.querySelectorAll('.rv').forEach(x=>io.observe(x));
 addEventListener('load',()=>document.querySelectorAll('.rv').forEach(x=>{const r=x.getBoundingClientRect();if(r.top<innerHeight)x.classList.add('in');}));
 setTimeout(()=>document.querySelectorAll('.rv').forEach(x=>x.classList.add('in')),1200);
 </script>
+<script>(function(){var sb=document.querySelector(".scroll-blur");if(!sb)return;function t(){sb.classList.toggle("on",(document.documentElement.scrollTop||document.body.scrollTop||0)>4);}addEventListener("scroll",t,{passive:true});addEventListener("resize",t);t();})();</script>
 </body>
 </html>
