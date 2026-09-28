@@ -98,9 +98,10 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
 
 
   /* ---- profile ---- */
-  .profile{display:flex;gap:20px;align-items:center}
+  .profile{display:flex;gap:20px;align-items:center;justify-content:center}
+  .profile-main{flex:0 1 auto !important}
   @media(max-width:560px){
-    .profile{gap:15px}
+    .profile{gap:14px}
     .avatar{width:64px !important;height:64px !important;border-radius:14px}
     .pname{font-size:25px}
     .role{font-size:14px;margin-top:4px}
