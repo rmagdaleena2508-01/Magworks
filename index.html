@@ -396,15 +396,17 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
   const l1=document.getElementById('introL1'), l2=document.getElementById('introL2');
   const LINE1A='Welcome';
   const LINE1='Welcome to my corner of the internet!';
-  const LINE2="Relax and take a look at my space. Wanna ask me something? <b>Email me</b>, and I'll reply to it.";
   const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  let seen=false; try{ seen=localStorage.getItem('introSeen')==='1'; }catch(e){}
   let done=false;
   function finish(){ if(done) return; done=true;
+    try{ localStorage.setItem('introSeen','1'); }catch(e){}
     document.documentElement.classList.remove('intro-lock');
     intro.style.display='none'; intro.remove();
   }
-  // plays on every load/reload (no session gate); only skipped for reduced-motion or if GSAP fails
-  if(reduce || !window.gsap){ finish(); return; }
+  // plays ONLY on a visitor's first visit (persisted in localStorage across pages + return visits);
+  // skipped forever after, and for reduced-motion or if GSAP fails
+  if(seen || reduce || !window.gsap){ finish(); return; }
   const IS_MOBILE = matchMedia('(max-width:680px)').matches;   // black dissolve on phones, glass on laptop
   document.documentElement.classList.add('intro-lock');
   window.scrollTo(0,0);
@@ -515,12 +517,9 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
   tl.to(nObj,{n:LINE1A.length, duration:LINE1A.length*PER, ease:'none', onUpdate:()=>revealTo(nObj.n)})   // "Welcome"
     .to(nObj,{n:chars.length, duration:(chars.length-LINE1A.length)*PER, ease:'none', onUpdate:()=>revealTo(nObj.n)}, '+=0.55') // pause, then the rest + "!"
     .add(clearCaret)
-    .to(l1,{duration:0.6,y:-46,opacity:0,ease:'power2.in'},'+=0.6')
-    .add(()=>{ l2.innerHTML=LINE2; })
-    .to(l2,{duration:0.95,y:0,opacity:1,ease:'power3.out'},'-=0.1')
-    .to({},{duration:3.4})
-    .to(l2,{duration:0.5,y:-30,opacity:0,ease:'power1.in'})
-    .add(startDissolve);
+    .to({},{duration:0.5})                                          // brief beat to read it
+    .to(l1,{duration:0.55,y:-40,opacity:0,ease:'power2.in'})        // welcome lifts away
+    .add(startDissolve);                                            // straight into the hero reveal
   // Skip: hide the button immediately, jump past the TEXT, and play a QUICK dissolve.
   function skip(){ if(done) return;
     if(skipBtn) skipBtn.style.display='none';
