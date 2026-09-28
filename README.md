@@ -47,6 +47,8 @@ The portfolio started as a plain static page. Over the course of development it 
 - **Job title** — a single, clear line under the name: "18 yo, AI Engineer" (the role is written the same way everywhere on the site).
 - **Avatar** — one illustrated profile image (the old photo-swap toggle and the extra photo were removed to keep it simple). The same avatar is reused as the site's brand mark (see below).
 - **"Now" strip** — one short line under the profile that says what Magdaleena is doing right now (interning, building). It is meant to be edited about once a month.
+- **Live local time** — a ticking **India (IST)** clock sits beside the location line (`Asia/Kolkata`, updated every second), so the profile feels live.
+- **Responsive profile** — on phones the avatar and name scale down and the avatar is vertically centered with the text, so the top section stays tidy and aligned instead of oversized.
 
 ### Page identity & sharing (the avatar as a brand mark)
 - *What:* the site is titled **"Magdaleena, a builder with high agency"** (the text you see on the browser tab), and the **avatar illustration is reused as the recognizable mark**: it is the **favicon** (the little icon in the browser tab and in bookmarks) on all three pages, and it is the image on the **link-preview card** when the site is shared.
