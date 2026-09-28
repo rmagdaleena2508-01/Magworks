@@ -403,15 +403,16 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
   const LINE1A='Welcome';
   const LINE1='Welcome to my corner of the internet!';
   const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
-  let seen=false; try{ seen=localStorage.getItem('introSeen')==='1'; }catch(e){}
+  let seen=false; try{ seen=sessionStorage.getItem('introSeen')==='1'; }catch(e){}
   let done=false;
   function finish(){ if(done) return; done=true;
-    try{ localStorage.setItem('introSeen','1'); }catch(e){}
+    try{ sessionStorage.setItem('introSeen','1'); }catch(e){}
     document.documentElement.classList.remove('intro-lock');
     intro.style.display='none'; intro.remove();
   }
-  // plays ONLY on a visitor's first visit (persisted in localStorage across pages + return visits);
-  // skipped forever after, and for reduced-motion or if GSAP fails
+  // plays once PER SESSION (sessionStorage): a fresh open plays it, but returning to
+  // Home from Writing/Contact in the same session does not replay it; a later visit
+  // (new session) shows it again. Skipped for reduced-motion or if GSAP fails.
   if(seen || reduce || !window.gsap){ finish(); return; }
   const IS_MOBILE = matchMedia('(max-width:680px)').matches;   // black dissolve on phones, glass on laptop
   document.documentElement.classList.add('intro-lock');
