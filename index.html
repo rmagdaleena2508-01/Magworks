@@ -92,10 +92,6 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
 
   main{padding-top:53px}
 
-  /* ---- hero banner: pixel-art bridge loop (contained + centered, scales with column) ---- */
-  .banner{position:relative;width:100%;overflow:hidden;border-radius:var(--r);
-    border:1px solid var(--border);background:var(--bg);line-height:0}
-  .banner video{display:block;width:100%;height:auto}
 
   /* ---- profile ---- */
   .profile{display:flex;gap:20px;align-items:flex-start}
@@ -567,21 +563,13 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
 <main id="top">
 
   <div class="row">
-    <div class="row-inner">
-      <div class="banner">
-        <video id="heroVideo" src="./assets/hero-banner.mp4" autoplay muted loop playsinline webkit-playsinline preload="auto" disablepictureinpicture disableremoteplayback></video>
-      </div>
-    </div>
-  </div>
-
-  <div class="row">
     <div class="row-inner profile rv">
       <div class="avatar"><img id="avatarImg" src="./assets/avatar.jpeg" alt="Magdaleena" /></div>
       <div class="profile-main">
         <div class="ptop">
           <div class="pname">Magdaleena</div>
         </div>
-        <div class="role" id="roleText">18 yo, Software Engineer</div>
+        <div class="role" id="roleText">18 yo, AI Engineer</div>
         <div class="loc">CS @ SRMIST · India</div>
       </div>
     </div>
@@ -668,7 +656,7 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
         <div class="achv"><div class="a-n">10/10 CGPA</div><div class="a-k">Rank 1, CSE department</div></div>
         <div class="achv"><div class="a-n">Stanford Code in Place</div><div class="a-k">Certified</div></div>
         <div class="achv"><div class="a-n">HackerRank Campus Crew</div><div class="a-k">Member, SRMIST</div></div>
-        <div class="achv" style="grid-column:1/-1"><div class="a-n">4× SWE Internships (AI)</div><div class="a-k">All before graduating</div></div>
+        <div class="achv" style="grid-column:1/-1"><div class="a-n">4× AI Engineering Internships</div><div class="a-k">All before graduating</div></div>
       </div>
       <div class="achv-note">What mentors and founders consistently point to: ownership, adaptability to feedback, and the discipline to keep showing up.</div>
     </div>
@@ -1120,21 +1108,6 @@ if(marquee && track && marqueeWrap){
     })
     .catch(()=>{ if(totalEl) totalEl.innerHTML='contribution graph unavailable — <a href="https://github.com/'+user+'" target="_blank" rel="noopener" style="text-decoration:underline">view on GitHub</a>'; });
 })();
-
-// hero banner: force muted inline autoplay + loop (kills the iOS play-button overlay)
-const heroVideo=document.getElementById('heroVideo');
-if(heroVideo){
-  heroVideo.muted=true; heroVideo.defaultMuted=true; heroVideo.loop=true;
-  heroVideo.setAttribute('muted','');
-  const tryPlay=()=>{ const p=heroVideo.play(); if(p&&p.catch) p.catch(()=>{}); };
-  tryPlay();
-  heroVideo.addEventListener('loadedmetadata',tryPlay);
-  heroVideo.addEventListener('canplay',tryPlay);
-  // last-resort: resume on the first user interaction if the browser blocked autoplay
-  const kick=()=>{ tryPlay(); document.removeEventListener('touchstart',kick); document.removeEventListener('click',kick); };
-  document.addEventListener('touchstart',kick,{passive:true,once:true});
-  document.addEventListener('click',kick,{once:true});
-}
 
 /* ---------------- behavior ---------------- */
 // theme toggle (defaults to dark; light only when the user opts in)

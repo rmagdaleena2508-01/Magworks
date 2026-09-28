@@ -22,7 +22,7 @@ Or open `index.html` directly in a browser.
 
 | File | Purpose |
 |------|---------|
-| `index.html` | Home — hero, profile, about, projects, tech stack, GitHub activity, highlights, achievements, build log, CTA, footer |
+| `index.html` | Home — profile, about, projects, tech stack, GitHub activity, highlights, achievements, build log, CTA, footer |
 | `writing.html` | Blog / writing list (technical notes + tips for college and internships) |
 | `contact.html` | Contact form (message box + prompt chips) that delivers straight to email |
 
@@ -36,7 +36,7 @@ The portfolio started as a plain static page. Over the course of development it 
 
 ### Layout & design
 - **Design language** modeled on a clean "dashboard/blueprint" style — a centered 800px column framed by dashed rules, an editorial serif for headings (Instrument Serif) paired with Inter for body text.
-- **Hero banner** — a pixel-art Golden Gate Bridge clip, muted and auto-looping. *Why:* a static banner felt flat; the loop was re-encoded (crossfade) so it repeats seamlessly, the Sora watermark was removed, and it's centered/contained so it scales cleanly on phones without cropping.
+- **No decorative hero banner.** The page now opens straight on the **profile** (name, role, "Now" line). *Why:* the old pixel-art Golden Gate Bridge clip looked pretty but said nothing about Magdaleena — the top of the page should be about her, not scenery. The bridge clip is **kept in `assets/history/`** (with a note) in case it's wanted later.
 
 ### Projects section
 - Turned the project grid into a **horizontal snap-scroll of vertical (portrait) cards**. *Why:* it shows more work in less vertical space and feels more app-like.
@@ -44,7 +44,7 @@ The portfolio started as a plain static page. Over the course of development it 
 - Projects: CubeSight, CSI SRMIST VDP, Financial Advisory Agents, ProblemBase — each with a one-line summary, live/repo links, and tech tags.
 
 ### Profile & interactions
-- **Job title** — a single, clear line under the name: "18 yo, Software Engineer".
+- **Job title** — a single, clear line under the name: "18 yo, AI Engineer" (the role is written the same way everywhere on the site).
 - **Avatar** — one illustrated profile image (the old photo-swap toggle and the extra photo were removed to keep it simple). The same avatar is reused as the site's brand mark (see below).
 - **"Now" strip** — one short line under the profile that says what Magdaleena is doing right now (interning, building). It is meant to be edited about once a month.
 
@@ -126,7 +126,6 @@ This is a **no-framework** site by design (fast, zero build, easy to host anywhe
 | Tech tooltips | One shared `position:fixed` card, built from the live `PROJECTS` data; hover on fine pointers, tap-toggle on touch; positioned + clamped to the viewport in JS |
 | Sound | **Web Audio API** (native) — a soft pop on the theme toggle and a xylophone note per tech-stack pill (hover/tap) |
 | Intro animation | **GSAP** (CDN) — character-index typewriter (human pace, no blink) for the two-beat line, slide-in second line, then a pixelated top-to-bottom reveal chosen by device — **glass** on laptop (`backdrop-filter: blur()` + drawn smoked-glass tile canvas), plain **black** dissolve on phones — per-block soft fade, slow `sine.inOut` ~2.9s; covering frame pre-drawn to avoid a hero flash; line-1 height reserved to avoid a mobile typing reflow; plays every load, key/button skip, off for reduced-motion |
-| Hero banner | Pre-rendered looping **MP4** in `assets/` |
 | Favicon & share card | Avatar image as `<link rel="icon">` + `apple-touch-icon`, plus **Open Graph** / **Twitter** meta (absolute image URL) so the tab icon and link previews use the avatar and the "high agency" title |
 
 ### "Backend" (there is no server — external APIs called from the browser)
@@ -139,7 +138,7 @@ This is a **no-framework** site by design (fast, zero build, easy to host anywhe
 | Tool | Used for |
 |------|----------|
 | **ImageMagick** | Cutting out / rounding image corners, resizing, optimizing thumbnails |
-| **ffmpeg** | Re-encoding the hero banner into a seamless muted loop, removing the watermark |
+| **ffmpeg** | Re-encoded the (now retired) hero banner into a seamless muted loop, removed the watermark; kept in `assets/history/` |
 | **Git / GitHub** | Version control and hosting |
 
 ### Deployment
