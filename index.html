@@ -328,6 +328,8 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
   /* ---- tech pill tooltip ---- */
   .pgrid{perspective:1000px}
   .pcard{transform-style:preserve-3d}
+  .pcard.clickable{cursor:pointer}
+  .pcard.clickable:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   .pill{position:relative}
   .pill.tapped{border-color:var(--border-2);color:var(--fg)}
   /* one shared tooltip, positioned + clamped to the viewport in JS (never off-screen) */
@@ -849,6 +851,14 @@ PROJECTS.forEach(p=>{
       <div class="ptags">${tags}</div>
       <div class="pfoot">${links}</div>
     </div>`;
+  // whole card opens the live site (when there is one); inner Live/Code links still work
+  if(p.live){
+    card.classList.add('clickable'); card.tabIndex=0; card.setAttribute('role','link');
+    card.setAttribute('aria-label', p.title+' — open live site');
+    const openLive=e=>{ if(e.target.closest('a')) return; window.open(p.live,'_blank','noopener'); };
+    card.addEventListener('click', openLive);
+    card.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); window.open(p.live,'_blank','noopener'); } });
+  }
   pg.appendChild(card);
 });
 

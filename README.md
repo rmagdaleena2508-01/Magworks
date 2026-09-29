@@ -42,6 +42,7 @@ The portfolio started as a plain static page. Over the course of development it 
 - Turned the project grid into a **horizontal snap-scroll of vertical (portrait) cards**. *Why:* it shows more work in less vertical space and feels more app-like.
 - Each card uses a **project screenshot on a gradient**, with images scaled to fill the card and an even gradient border around them for a framed look.
 - Projects: CubeSight, CSI SRMIST VDP, Financial Advisory Agents, ProblemBase — each with a one-line summary, live/repo links, and tech tags.
+- **The whole card is clickable for projects that have a live site.** *What:* on laptop or phone, clicking (or tapping) anywhere on a project card that has a live deployment opens that live site — you don't have to aim for the small "Live" button inside. *Where:* the project render in `index.html` adds a click/keyboard handler on cards where `p.live` exists (only CubeSight and CSI right now). *How:* the card gets a `clickable` class (pointer cursor, focus ring, `role="link"`), and its click opens `p.live` in a new tab — unless the click landed on an inner link (`Live`/`Code`), so the `Code` button still goes to the repo and there's no double-open. Cards without a live site (Financial Advisory Agents, ProblemBase) stay non-clickable. *Idea we followed:* make the obvious action (see it live) the easiest one — the big target, not the tiny button.
 
 ### Profile & interactions
 - **Job title** — a single, clear line under the name: "18 yo, AI Engineer" (the role is written the same way everywhere on the site).
