@@ -29,6 +29,7 @@ Or open `index.html` directly in a browser.
 | `writing.html` | Blog / writing list (technical notes + tips for college and internships) |
 | `contact.html` | Contact form (message box + prompt chips) that delivers straight to email |
 | `privacy.html` | Privacy policy — what little data the site handles, third parties it loads, how the contact form works (linked from every footer) |
+| `404.html` | Friendly "page not found" page shown for any wrong/dead URL (GitHub Pages + Vercel both use it); a `<base>` tag makes its links work from any path |
 
 The site content lives in data arrays near the bottom of `index.html` (`PROJECTS`, `STACK`, `TESTIMONIALS`, `CHANNELS`, `ICONS`), so updating a project, skill, or testimonial is a one-line change.
 
