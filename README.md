@@ -110,6 +110,24 @@ Changes made from that feedback:
 
 ---
 
+## I'm updating a few things, and here are their actual use cases
+
+### Enforcing HTTPS
+- **Encrypts the traffic** — no one on the network can read or tamper with what a visitor sends or sees.
+- **Browser trust** — no "Not Secure" warning, the padlock shows; a scary warning makes recruiters bounce.
+- **Unlocks modern web features** — camera, service workers, geolocation only work over HTTPS (needed for live demos like CubeSight).
+- **Better SEO + safety** — Google favours HTTPS, and HSTS blocks downgrade attacks (forcing you back to HTTP).
+
+### Meta titles + descriptions
+- **The title** is the clickable headline in Google results and the browser-tab label — a good title earns more clicks.
+- **The description** is the grey snippet under it — a one-line pitch that decides whether a searcher clicks.
+- **Controls the first impression** in search results and in link-preview cards when the site is shared (via the Open Graph / Twitter tags).
+- **Canonical URL** tells Google the one true address (GitHub Pages and Vercel serve the same site), so ranking isn't split across duplicate URLs.
+
+*In short:* HTTPS is about trust, safety, and eligibility; meta titles and descriptions are about who finds the site and whether they click. Both are cheap, and both are judged before anyone reads a word of the actual content.
+
+---
+
 ## Frameworks, tools & libraries — by part
 
 This is a **no-framework** site by design (fast, zero build, easy to host anywhere). The "stack" is mostly the browser platform plus a few external APIs.
