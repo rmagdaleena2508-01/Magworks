@@ -2,8 +2,11 @@
 
 A dark, single-page portfolio for an AI / frontend engineer. It is a **static site with no build step** — just plain HTML, CSS, and vanilla JavaScript plus a few files in `assets/`. Everything server-like (contact form, GitHub graph) is handled by free third-party APIs called from the browser.
 
+- **Live (primary domain):** https://magdaleena.me/
 - **Live (GitHub Pages):** https://rmagdaleena2508-01.github.io/Magworks/
 - **Live (Vercel):** https://magworks.vercel.app/
+
+> The `canonical` and Open Graph / Twitter URLs point to **https://magdaleena.me/** (the primary domain), so search engines and social cards treat it as the one true address instead of splitting across the Vercel/Pages URLs.
 
 ---
 
