@@ -151,7 +151,13 @@ Changes made from that feedback:
 - **Built from a template** — `assets/og-card.html` is the source; render it at 1200×630 to regenerate the PNG if the wording ever changes. Rebuilt with the site's real fonts (Instrument Serif + Inter + JetBrains Mono), so it matches the page exactly.
 - **Same card on every page** — Home, Contact, Writing, and Privacy all point to it, with width/height and alt text so scrapers render it fast and reliably.
 
-*In short:* HTTPS is about trust, safety, and eligibility; meta titles and descriptions are about who finds the site and whether they click; mobile responsiveness is about the screen most people actually use; the sitemap and robots.txt are about steering search engines to the right pages; the social preview image is the first impression when the link gets shared. All are cheap, and all are judged before anyone reads a word of the actual content.
+### Page load speed
+- **A slow page loses people before they read anything** — and Google ranks faster pages higher. The site was already quick (Brotli-compressed, ~0.85s to load), so this was tuning, not rescue.
+- **The animation library loads later now** — the intro uses GSAP (~28KB from a CDN). It was blocking the first paint even though it's only needed on the first visit. It now loads *deferred* (off the critical path) and the intro waits until it's ready, so the page draws sooner.
+- **The profile photo is prioritised** — it's the biggest thing above the fold (the "largest contentful paint"), so it's marked high-priority with a fixed size, so it loads first and nothing jumps around while it does.
+- **Killed three dead icon requests** — three tech-stack icons (OpenAI, VS Code, CSS3) used old names the icon service had dropped, so every load fired requests that 404'd. Fixed the names (or removed them), so no wasted round-trips and a clean console.
+
+*In short:* HTTPS is about trust, safety, and eligibility; meta titles and descriptions are about who finds the site and whether they click; mobile responsiveness is about the screen most people actually use; the sitemap and robots.txt are about steering search engines to the right pages; the social preview image is the first impression when the link gets shared; page load speed is whether people stay long enough to see any of it. All are cheap, and all are judged before anyone reads a word of the actual content.
 
 ---
 
