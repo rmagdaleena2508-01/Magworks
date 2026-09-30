@@ -236,6 +236,13 @@
     <div class="row-inner rv">
       <form id="cform" novalidate>
 
+        <!-- spam traps: invisible to people, catch bots -->
+        <input type="checkbox" name="botcheck" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:0;height:0;opacity:0" />
+        <div aria-hidden="true" style="position:absolute;left:-9999px;top:-9999px;width:0;height:0;overflow:hidden">
+          <label>Company website (leave this blank)<input type="text" id="hp" name="website" tabindex="-1" autocomplete="off" /></label>
+        </div>
+
+
         <div class="fbox">
           <div class="fbox-label">What's this about?</div>
           <div class="examples" id="examples">
@@ -425,10 +432,17 @@ function validateAll(){ const a=checkName(), b=checkEmail(), c=checkMsg(); retur
   el.addEventListener('input', ()=>{ if(el.closest('.field').classList.contains('invalid')) fn(); });
 });
 
+const formLoadTime = Date.now();   // for the too-fast-submit spam trap
 form.addEventListener('submit', async (e)=>{
   e.preventDefault();
   okMsg.classList.remove('show'); errMsg.classList.remove('show');
   if(!validateAll()){ const bad=form.querySelector('.field.invalid input,.field.invalid textarea'); if(bad) bad.focus(); return; }
+
+  // spam protection: honeypot filled, hidden checkbox ticked, or submitted impossibly fast (< 2.5s)
+  const hp=document.getElementById('hp');
+  const botcheck=form.querySelector('input[name="botcheck"]');
+  const looksLikeBot = (hp && hp.value.trim()) || (botcheck && botcheck.checked) || (Date.now()-formLoadTime < 2500);
+  if(looksLikeBot){ showToast(); form.reset(); examples.classList.remove('hide'); return; }  // pretend it worked, send nothing
 
   if(!WEB3FORMS_ACCESS_KEY || WEB3FORMS_ACCESS_KEY === 'YOUR_ACCESS_KEY_HERE'){
     errMsg.classList.add('show');
@@ -447,6 +461,7 @@ form.addEventListener('submit', async (e)=>{
         name: form.name.value,
         email: form.email.value,
         message: `Purpose: ${purpose.value || '—'}\n\nMessage:\n${form.message.value}`,
+        botcheck: !!(botcheck && botcheck.checked),   // Web3Forms server-side honeypot too
       })
     });
     const data = await res.json();
