@@ -95,6 +95,7 @@ The page used to just sit there. We added small things that answer back when you
 - **Build log** — a short, honest changelog of the site itself ("what I changed and why"), rendered as a dated timeline from a `CHANGELOG` array. *Why:* the site is a live project that has been iterated a lot; showing that in the open signals persistence and taste, which a static résumé can't.
 - **Writing** page added for technical posts.
 - **Contact** page with a two-box form (purpose + details) that delivers to email.
+- **Form checks (validation).** *What:* the contact form checks your entries before it can be sent — the name can't be blank, the email must look like a real email, and the message needs at least 10 characters. *How:* on submit (and when you leave or fix a field) a small script marks any bad field red and shows a plain note under it (e.g. "Enter a valid email, like you@company.com."); the note disappears the moment you fix it, the first bad field gets focused, and nothing is sent to Web3Forms until all three pass. *Why:* stops half-empty or mistyped messages (a wrong email means she can't reply), and tells the visitor exactly what to fix.
 
 ### Reliability fixes
 - **Mobile banner** hardened for reliable muted inline autoplay (no play-button overlay).
