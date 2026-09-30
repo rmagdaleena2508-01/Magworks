@@ -4,23 +4,24 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <script>try{var h=location.hostname;if(location.protocol==="http:"&&h!=="localhost"&&h!=="127.0.0.1"&&h!=="::1"&&!/\.(local|test)$/.test(h))location.replace(location.href.replace(/^http:/,"https:"));}catch(e){}</script>
-<title>Writing — Magdaleena | AI, agents & internships</title>
-<meta name="description" content="Technical notes from Magdaleena — building and breaking multi-agent systems and RAG pipelines, plus honest tips for college and internships." />
+<title>Privacy Policy — Magdaleena</title>
+<meta name="description" content="Privacy policy for Magdaleena's portfolio: what little data the site handles, the third parties it loads, and how the contact form works." />
+<meta name="robots" content="noindex, follow" />
 <script>document.documentElement.classList.add('js');/* always open in dark mode; light is a per-session toggle only */</script>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <link rel="icon" href="./assets/avatar.jpeg" />
 <link rel="apple-touch-icon" href="./assets/avatar.jpeg" />
-<link rel="canonical" href="https://magworks.vercel.app/writing.html" />
+<link rel="canonical" href="https://magworks.vercel.app/privacy.html" />
 <meta property="og:type" content="website" />
-<meta property="og:url" content="https://magworks.vercel.app/writing.html" />
-<meta property="og:title" content="Writing — Magdaleena | AI, agents & internships" />
-<meta property="og:description" content="Technical notes on building and breaking multi-agent systems and RAG pipelines, plus honest tips for college and internships." />
+<meta property="og:url" content="https://magworks.vercel.app/privacy.html" />
+<meta property="og:title" content="Privacy Policy — Magdaleena" />
+<meta property="og:description" content="What little data this site handles, the third parties it loads, and how the contact form works." />
 <meta property="og:image" content="https://magworks.vercel.app/assets/avatar.jpeg" />
 <meta name="twitter:card" content="summary" />
-<meta name="twitter:title" content="Writing — Magdaleena" />
-<meta name="twitter:description" content="Technical notes on multi-agent systems and RAG, plus college and internship tips." />
+<meta name="twitter:title" content="Privacy Policy — Magdaleena" />
+<meta name="twitter:description" content="What little data this site handles and how the contact form works." />
 <meta name="twitter:image" content="https://magworks.vercel.app/assets/avatar.jpeg" />
 <style>
   :root{
@@ -134,6 +135,14 @@
     -webkit-backdrop-filter:blur(var(--b));backdrop-filter:blur(var(--b))}
   .scroll-blur>div{-webkit-mask-image:linear-gradient(to bottom,#000 0,#000 var(--m),transparent calc(var(--m) + 12%));
     mask-image:linear-gradient(to bottom,#000 0,#000 var(--m),transparent calc(var(--m) + 12%))}
+  .legal h2{font-family:var(--serif);font-weight:400;font-size:22px;margin:28px 0 8px;color:var(--fg)}
+  .legal p{color:var(--muted);font-size:14.5px;line-height:1.72;margin-top:10px}
+  .legal ul{margin:8px 0 0 18px}
+  .legal li{color:var(--muted);font-size:14.5px;line-height:1.7;margin-top:5px}
+  .legal a{color:var(--accent);text-decoration:underline;text-underline-offset:2px}
+  html.light .legal a{color:#2563eb}
+  .legal b{color:var(--fg);font-weight:600}
+  .legal .updated{font-family:var(--mono);font-size:11.5px;color:var(--muted-2);margin-top:10px}
   footer.site a{color:var(--muted);text-decoration:underline;text-underline-offset:2px}
   footer.site a:hover{color:var(--fg)}
 </style>
@@ -150,7 +159,7 @@
       <a href="./contact.html">Contact</a>
       <a href="./index.html#projects">Projects</a>
       <a href="./index.html#stack">Stack</a>
-      <a href="./writing.html" class="active">Writing</a>
+      <a href="./writing.html">Writing</a>
       <span class="nav-ind" aria-hidden="true"></span>
     </nav>
     <div class="nav-right">
@@ -173,34 +182,53 @@
   <div class="row">
     <div class="row-inner rv">
       <a class="back" href="./index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M11 18l-6-6 6-6"/></svg> Home</a>
-      <h1 class="wtitle">Writing</h1>
-      <p class="wsub">My technical notes from things I've built and broken.<br>Oh, wait I also put tips and tricks for college and internships.</p>
+      <h1 class="wtitle">Privacy Policy</h1>
+      <p class="wsub">A personal portfolio. It collects almost nothing, has no ads, and no tracking.</p>
     </div>
   </div>
 
   <div class="row">
-    <div class="row-inner rv">
-      <div class="post-list">
+    <div class="row-inner rv legal">
+      <p class="updated">Last updated: 30 September 2026</p>
 
-        <a class="post" href="https://x.com/timotheoszzzz/status/2076777980450455613" target="_blank" rel="noopener">
-          <div class="post-meta">
-            <span>Jul 13, 2026</span><span class="dot"></span><span>4 min read</span>
-          </div>
-          <div class="post-title">Chaining LLM Calls Almost Ruined My Insurance AI Agent — So I Merged Them Instead</div>
-          <div class="post-desc">A short technical story showing why passing numbers between separate LLM tool calls fails, and how one merged CrewAI function with Python state handling fixed the problem for accurate underinsurance detection.</div>
-          <div class="post-foot">
-            <div class="post-tags">
-              <span class="post-tag">CrewAI</span>
-              <span class="post-tag">LLM Tool Calls</span>
-              <span class="post-tag">AI Agents</span>
-            </div>
-            <span class="post-read">Read <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
-          </div>
-        </a>
+      <h2>The short version</h2>
+      <p>This site uses no analytics, no advertising, and no tracking cookies, and it does not build a profile of you. The only personal data it ever receives is what you choose to type into the contact form.</p>
 
-      </div>
+      <h2>What the contact form collects</h2>
+      <p>When you send a message on the <a href="./contact.html">Contact</a> page, the <b>name, email, and message</b> you enter are delivered to Magdaleena's inbox through <a href="https://web3forms.com" target="_blank" rel="noopener">Web3Forms</a>, a form-relay service. This data is used only to read and reply to you &mdash; it is not sold, rented, or used for marketing.</p>
 
-      <p class="wnote">More posts coming. Follow along on <a href="https://x.com/timotheoszzzz" target="_blank" rel="noopener">X</a> and <a href="https://www.linkedin.com/in/rmagdaleena-aiengineer/" target="_blank" rel="noopener">LinkedIn</a>.</p>
+      <h2>What is stored in your browser</h2>
+      <p>The site saves two small values in your browser's own storage. They stay on your device and are never sent anywhere:</p>
+      <ul>
+        <li><b>Theme</b> &mdash; whether you switched to light mode.</li>
+        <li><b>Intro seen</b> &mdash; a flag so the opening animation plays once per visit rather than on every page load.</li>
+      </ul>
+      <p>You can clear these anytime by clearing this site's data in your browser.</p>
+
+      <h2>Third parties the page loads</h2>
+      <p>To render, the page loads a few resources from other providers. As with any web request, they may see your IP address and browser details in their own logs:</p>
+      <ul>
+        <li><b>Hosting</b> &mdash; <a href="https://vercel.com" target="_blank" rel="noopener">Vercel</a> and <a href="https://pages.github.com" target="_blank" rel="noopener">GitHub Pages</a> serve the files.</li>
+        <li><b>Fonts</b> &mdash; <a href="https://fonts.google.com" target="_blank" rel="noopener">Google Fonts</a>.</li>
+        <li><b>Icons &amp; animation</b> &mdash; Simple Icons and GSAP, loaded via <a href="https://cdnjs.com" target="_blank" rel="noopener">cdnjs</a>.</li>
+        <li><b>GitHub activity graph</b> &mdash; a public GitHub contributions API is called to draw the heatmap; no information about you is sent to it.</li>
+      </ul>
+      <p>Each of these has its own privacy policy, and this site has no control over their logging.</p>
+
+      <h2>Cookies</h2>
+      <p>The site sets no cookies of its own, and shows no cookie banner because there is nothing to consent to.</p>
+
+      <h2>Your choices</h2>
+      <p>Prefer not to use the form? Email directly instead. To ask what message data exists or to have it deleted, email <a href="mailto:rmagdaleenawork@gmail.com">rmagdaleenawork@gmail.com</a> and it will be removed from the inbox.</p>
+
+      <h2>Children</h2>
+      <p>This site is not directed at children under 13 and does not knowingly collect their data.</p>
+
+      <h2>Changes</h2>
+      <p>If this policy changes, the date at the top will be updated.</p>
+
+      <h2>Contact</h2>
+      <p>Questions about privacy? Email <a href="mailto:rmagdaleenawork@gmail.com">rmagdaleenawork@gmail.com</a>.</p>
     </div>
   </div>
 

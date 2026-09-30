@@ -25,6 +25,7 @@ Or open `index.html` directly in a browser.
 | `index.html` | Home — profile, about, projects, tech stack, GitHub activity, highlights, achievements, build log, CTA, footer |
 | `writing.html` | Blog / writing list (technical notes + tips for college and internships) |
 | `contact.html` | Contact form (message box + prompt chips) that delivers straight to email |
+| `privacy.html` | Privacy policy — what little data the site handles, third parties it loads, how the contact form works (linked from every footer) |
 
 The site content lives in data arrays near the bottom of `index.html` (`PROJECTS`, `STACK`, `TESTIMONIALS`, `CHANNELS`, `ICONS`), so updating a project, skill, or testimonial is a one-line change.
 
