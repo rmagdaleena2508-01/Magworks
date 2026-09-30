@@ -150,6 +150,9 @@ This is a **no-framework** site by design (fast, zero build, easy to host anywhe
 - **GitHub** repository → served by **GitHub Pages** and **Vercel** (Vercel auto-deploys on every push).
 - The site is fully static, so both hosts serve the same files. All links are relative, so it works at both the GitHub Pages subpath and the Vercel root.
 
+### HTTPS (enforced)
+- *What:* the site is only reachable over **HTTPS**. *How:* three layers — (1) a tiny inline script at the top of every page's `<head>` redirects `http://` to `https://` (guarded so `localhost`/`127.0.0.1`/`.local`/`.test` are left alone for local dev); (2) `vercel.json` sends an **HSTS** header (`Strict-Transport-Security: max-age=63072000; includeSubDomains; preload`) so browsers refuse HTTP on return visits; (3) both hosts serve HTTPS natively — `*.github.io` is HTTPS-only, and Vercel auto-redirects. All page assets are loaded over `https://` (Google Fonts, GSAP, Simple Icons, the GitHub API, Web3Forms), so there is no mixed content. *Note:* if a custom domain is ever added on GitHub Pages, tick **Settings → Pages → Enforce HTTPS** for it.
+
 ---
 
 ## Editing content
