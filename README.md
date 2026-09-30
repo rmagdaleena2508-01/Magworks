@@ -30,6 +30,8 @@ Or open `index.html` directly in a browser.
 | `contact.html` | Contact form (message box + prompt chips) that delivers straight to email |
 | `privacy.html` | Privacy policy — what little data the site handles, third parties it loads, how the contact form works (linked from every footer) |
 | `404.html` | Friendly "page not found" page shown for any wrong/dead URL (GitHub Pages + Vercel both use it); a `<base>` tag makes its links work from any path |
+| `sitemap.xml` | Lists the indexable pages (Home, Writing, Contact) for search engines |
+| `robots.txt` | Crawl rules — allows the public site, hides Privacy/404/backup, points to the sitemap |
 
 The site content lives in data arrays near the bottom of `index.html` (`PROJECTS`, `STACK`, `TESTIMONIALS`, `CHANNELS`, `ICONS`), so updating a project, skill, or testimonial is a one-line change.
 
@@ -137,7 +139,13 @@ Changes made from that feedback:
 - **No sideways scroll** — the whole page fits the screen width; nothing spills off the right edge. The one wide thing (the GitHub activity graph) scrolls smoothly on its own inside a box, with a thin scrollbar, instead of stretching the page.
 - **Same fix on every page** — Home, Contact, Writing, Privacy, and the 404, so the site feels finished no matter where someone lands.
 
-*In short:* HTTPS is about trust, safety, and eligibility; meta titles and descriptions are about who finds the site and whether they click; mobile responsiveness is about the screen most people actually use. All are cheap, and all are judged before anyone reads a word of the actual content.
+### Sitemap + robots.txt
+- **`sitemap.xml` is a map for search engines** — it lists the pages worth indexing (Home, Writing, Contact) with a priority and how often each changes, so Google finds and re-crawls them faster instead of guessing.
+- **`robots.txt` sets the rules** — it welcomes crawlers to the public site and tells them to skip the pages that shouldn't show up in search (Privacy, the 404, and the old backup file).
+- **They point at each other** — `robots.txt` names where the sitemap lives, the clean first step a crawler takes on arrival.
+- **Both use the real domain** — every link is `https://magdaleena.me/`, matching the canonical URLs, so ranking isn't split across the GitHub Pages and Vercel copies.
+
+*In short:* HTTPS is about trust, safety, and eligibility; meta titles and descriptions are about who finds the site and whether they click; mobile responsiveness is about the screen most people actually use; the sitemap and robots.txt are about steering search engines to the right pages. All are cheap, and all are judged before anyone reads a word of the actual content.
 
 ---
 
