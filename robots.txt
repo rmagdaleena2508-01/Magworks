@@ -1,0 +1,12 @@
+# magdaleena.me
+# Search engines welcome. Everything public is fair to crawl.
+
+User-agent: *
+Allow: /
+
+# Keep these out of search results:
+Disallow: /privacy.html
+Disallow: /404.html
+Disallow: /index.old.html
+
+Sitemap: https://magdaleena.me/sitemap.xml
