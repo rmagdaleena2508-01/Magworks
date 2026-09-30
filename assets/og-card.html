@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="robots" content="noindex" />
+<!-- Source template for the 1200x630 social preview image (og-image.png). Render at 1200x630 to regenerate. -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:#0a0a0a; --card:#171717; --fg:#fafafa; --muted:#a1a1a1; --muted-2:#737373;
+    --border:rgba(255,255,255,.1); --accent:#8fb3ff; --ok:#3fb950;
+    --serif:'Instrument Serif',Georgia,serif;
+    --sans:'Inter',system-ui,sans-serif;
+    --mono:'JetBrains Mono',ui-monospace,monospace;
+  }
+  html,body{width:1200px;height:630px;background:var(--bg);color:var(--fg);font-family:var(--sans);overflow:hidden}
+  /* dashed-grid backdrop, like the site */
+  .wrap{position:relative;width:1200px;height:630px;padding:70px 80px;display:flex;flex-direction:column;justify-content:space-between;
+    background:
+      radial-gradient(1200px 500px at 82% 12%, rgba(143,179,255,.10), transparent 60%),
+      linear-gradient(var(--border) 1px, transparent 1px) 0 0/100% 42px,
+      var(--bg);
+  }
+  .wrap::before{content:"";position:absolute;inset:0;
+    background:linear-gradient(90deg, transparent 79px, var(--border) 79px, var(--border) 80px, transparent 80px),
+               linear-gradient(90deg, transparent 1119px, var(--border) 1119px, var(--border) 1120px, transparent 1120px);
+    pointer-events:none}
+  .top{position:relative;display:flex;align-items:center;justify-content:space-between}
+  .now{display:flex;align-items:center;gap:9px;font-family:var(--mono);font-size:15px;letter-spacing:.04em;color:var(--muted-2)}
+  .dot{width:9px;height:9px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px 1px rgba(63,185,80,.6)}
+  .site{font-family:var(--mono);font-size:16px;color:var(--muted);letter-spacing:.02em}
+
+  .mid{position:relative;display:flex;align-items:center;gap:44px}
+  .avatar{width:190px;height:190px;border-radius:26px;object-fit:cover;border:1px solid var(--border);
+    box-shadow:0 20px 50px rgba(0,0,0,.5)}
+  .name{font-family:var(--serif);font-size:96px;line-height:.98;letter-spacing:.5px}
+  .role{font-family:var(--sans);font-weight:600;font-size:30px;margin-top:10px;color:var(--fg)}
+  .role b{color:var(--accent);font-weight:700}
+  .meta{font-family:var(--mono);font-size:17px;color:var(--muted-2);margin-top:12px;letter-spacing:.02em}
+
+  .tag{position:relative;font-family:var(--serif);font-size:38px;line-height:1.25;color:var(--muted);max-width:1040px}
+  .tag em{color:var(--fg);font-style:italic}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="now"><span class="dot"></span>AVAILABLE FOR WORK</div>
+      <div class="site">magdaleena.me</div>
+    </div>
+
+    <div class="mid">
+      <img class="avatar" src="./avatar.jpeg" alt="" />
+      <div>
+        <div class="name serif">Magdaleena</div>
+        <div class="role">18 yo, <b>AI Engineer</b></div>
+        <div class="meta">multi-agent systems · RAG pipelines · guardrails</div>
+      </div>
+    </div>
+
+    <div class="tag">Building agents that <em>break less</em> — and writing about the ones that do.</div>
+  </div>
+</body>
+</html>
