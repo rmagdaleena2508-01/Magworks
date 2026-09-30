@@ -145,7 +145,13 @@ Changes made from that feedback:
 - **They point at each other** — `robots.txt` names where the sitemap lives, the clean first step a crawler takes on arrival.
 - **Both use the real domain** — every link is `https://magdaleena.me/`, matching the canonical URLs, so ranking isn't split across the GitHub Pages and Vercel copies.
 
-*In short:* HTTPS is about trust, safety, and eligibility; meta titles and descriptions are about who finds the site and whether they click; mobile responsiveness is about the screen most people actually use; the sitemap and robots.txt are about steering search engines to the right pages. All are cheap, and all are judged before anyone reads a word of the actual content.
+### Social preview image
+- **It's the card people see before the site** — when the link is shared on Twitter/X, LinkedIn, WhatsApp, Slack, or iMessage, those apps show a preview. A tiny square avatar looks unfinished; a real card looks like someone who ships.
+- **A wide 1200×630 card** (`assets/og-image.png`) in the site's dark style — name, role, tagline, and photo — replaces the old thumbnail. The Twitter card type moved from `summary` (small square) to `summary_large_image` (big banner).
+- **Built from a template** — `assets/og-card.html` is the source; render it at 1200×630 to regenerate the PNG if the wording ever changes. Rebuilt with the site's real fonts (Instrument Serif + Inter + JetBrains Mono), so it matches the page exactly.
+- **Same card on every page** — Home, Contact, Writing, and Privacy all point to it, with width/height and alt text so scrapers render it fast and reliably.
+
+*In short:* HTTPS is about trust, safety, and eligibility; meta titles and descriptions are about who finds the site and whether they click; mobile responsiveness is about the screen most people actually use; the sitemap and robots.txt are about steering search engines to the right pages; the social preview image is the first impression when the link gets shared. All are cheap, and all are judged before anyone reads a word of the actual content.
 
 ---
 
