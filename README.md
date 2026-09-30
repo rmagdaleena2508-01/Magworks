@@ -157,7 +157,13 @@ Changes made from that feedback:
 - **The profile photo is prioritised** — it's the biggest thing above the fold (the "largest contentful paint"), so it's marked high-priority with a fixed size, so it loads first and nothing jumps around while it does.
 - **Killed three dead icon requests** — three tech-stack icons (OpenAI, VS Code, CSS3) used old names the icon service had dropped, so every load fired requests that 404'd. Fixed the names (or removed them), so no wasted round-trips and a clean console.
 
-*In short:* HTTPS is about trust, safety, and eligibility; meta titles and descriptions are about who finds the site and whether they click; mobile responsiveness is about the screen most people actually use; the sitemap and robots.txt are about steering search engines to the right pages; the social preview image is the first impression when the link gets shared; page load speed is whether people stay long enough to see any of it. All are cheap, and all are judged before anyone reads a word of the actual content.
+### Analytics
+- **You can't improve what you can't see** — without any numbers, there's no way to know if the site gets visitors, which projects people open, or whether a shared link actually lands.
+- **Vercel Web Analytics** — the site already runs on Vercel, so this is the lightest option: a ~1KB script that counts page views and rough visitor totals. It's **cookieless**, stores nothing on the visitor's device, doesn't follow anyone across sites, and needs no cookie banner — so it keeps the privacy promise instead of breaking it.
+- **Loads only on the live domain** — a hostname check means the script runs on magdaleena.me only; the GitHub Pages copy and local testing never call it, so there are no stray 404s or fake page views.
+- **Disclosed honestly** — the privacy page was updated to name the tool and say exactly what it does (and doesn't) collect.
+
+*In short:* HTTPS is about trust, safety, and eligibility; meta titles and descriptions are about who finds the site and whether they click; mobile responsiveness is about the screen most people actually use; the sitemap and robots.txt are about steering search engines to the right pages; the social preview image is the first impression when the link gets shared; page load speed is whether people stay long enough to see any of it; analytics is how you learn whether any of it is working. All are cheap, and all are judged before anyone reads a word of the actual content.
 
 ---
 
