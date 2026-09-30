@@ -414,10 +414,12 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
   </div>
   <button id="introSkip" type="button">skip intro</button>
 </div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/TextPlugin.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/TextPlugin.min.js"></script>
 <script>
-(function(){
+// GSAP is deferred (off the critical path); this init waits for DOMContentLoaded,
+// which fires after deferred scripts execute, so window.gsap is ready by then.
+document.addEventListener('DOMContentLoaded',function(){
   const intro=document.getElementById('intro');
   if(!intro) return;
   const l1=document.getElementById('introL1'), l2=document.getElementById('introL2');
@@ -553,12 +555,13 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
     if(skipBtn) skipBtn.style.display='none';
     if(dissolveStarted){ if(dissolveTween) dissolveTween.progress(1); return; }  // already transitioning -> fast-forward
     tl.kill(); clearCaret(); gsap.set([l1,l2],{opacity:0}); startDissolve(); }   // same-speed dissolve as normal
+
   if(skipBtn) skipBtn.addEventListener('click',skip);
   // only an explicit key skips automatically — a stray tap/scroll must NOT nuke the intro on mobile
   addEventListener('keydown',skip,{once:true,passive:true});
   // safety: never leave a black screen stuck (long enough to never clip the dissolve)
   setTimeout(()=>{ if(!done) finish(); }, 16000);
-})();
+});
 </script>
 
 <div class="scroll-prog" aria-hidden="true"><i></i></div>
@@ -596,7 +599,7 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
 
   <div class="row">
     <div class="row-inner profile rv">
-      <div class="avatar"><img id="avatarImg" src="./assets/avatar.jpeg" alt="Magdaleena" /></div>
+      <div class="avatar"><img id="avatarImg" src="./assets/avatar.jpeg" alt="Magdaleena" width="96" height="96" fetchpriority="high" decoding="async" /></div>
       <div class="profile-main">
         <div class="ptop">
           <div class="pname">Magdaleena</div>
@@ -790,10 +793,10 @@ const PROJECTS = [
 ];
 
 const STACK = {
-  ai:[['CrewAI',null],['OpenAI API','openai'],['Pydantic','pydantic'],['MCP',null],['Google Gemini API','googlegemini'],['Groq API',null]],
+  ai:[['CrewAI',null],['OpenAI API',null],['Pydantic','pydantic'],['MCP',null],['Google Gemini API','googlegemini'],['Groq API',null]],
   backend:[['Python','python'],['FastAPI','fastapi'],['Django','django'],['C++','cplusplus'],['C','c'],['MongoDB','mongodb']],
-  frontend:[['React','react'],['Vite','vite'],['Tailwind CSS','tailwindcss'],['GSAP','greensock'],['Lenis',null],['Three.js','threedotjs'],['Flutter','flutter'],['Dart','dart'],['HTML','html5'],['CSS','css3'],['JavaScript','javascript']],
-  tools:[['Git','git'],['GitHub','github'],['VS Code','visualstudiocode'],['Claude Code',null],['Codex',null],['Notion','notion'],['Google AI Studio',null],['Google Stitch',null]],
+  frontend:[['React','react'],['Vite','vite'],['Tailwind CSS','tailwindcss'],['GSAP','greensock'],['Lenis',null],['Three.js','threedotjs'],['Flutter','flutter'],['Dart','dart'],['HTML','html5'],['CSS','css'],['JavaScript','javascript']],
+  tools:[['Git','git'],['GitHub','github'],['VS Code',null],['Claude Code',null],['Codex',null],['Notion','notion'],['Google AI Studio',null],['Google Stitch',null]],
 };
 const CATS = [['all','All'],['frontend','Frontend'],['backend','Backend'],['ai','AI & Agents'],['tools','Tools']];
 
