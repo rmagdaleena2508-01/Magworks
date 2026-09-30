@@ -131,7 +131,13 @@ Changes made from that feedback:
 - **Controls the first impression** in search results and in link-preview cards when the site is shared (via the Open Graph / Twitter tags).
 - **Canonical URL** tells Google the one true address (GitHub Pages and Vercel serve the same site), so ranking isn't split across duplicate URLs.
 
-*In short:* HTTPS is about trust, safety, and eligibility; meta titles and descriptions are about who finds the site and whether they click. Both are cheap, and both are judged before anyone reads a word of the actual content.
+### Mobile responsiveness
+- **Most visitors are on a phone** — recruiters and friends open the link from a message, not a desktop. If it breaks on a small screen, that's the only impression they get.
+- **Bigger tap targets** — the top-corner buttons (theme, menu) are now 40×40px on phones, the size Apple and Google recommend so a thumb hits them cleanly, not the button next door.
+- **No sideways scroll** — the whole page fits the screen width; nothing spills off the right edge. The one wide thing (the GitHub activity graph) scrolls smoothly on its own inside a box, with a thin scrollbar, instead of stretching the page.
+- **Same fix on every page** — Home, Contact, Writing, Privacy, and the 404, so the site feels finished no matter where someone lands.
+
+*In short:* HTTPS is about trust, safety, and eligibility; meta titles and descriptions are about who finds the site and whether they click; mobile responsiveness is about the screen most people actually use. All are cheap, and all are judged before anyone reads a word of the actual content.
 
 ---
 
