@@ -174,6 +174,10 @@
     mask-image:linear-gradient(to bottom,#000 0,#000 var(--m),transparent calc(var(--m) + 12%))}
   footer.site a{color:var(--muted);text-decoration:underline;text-underline-offset:2px}
   footer.site a:hover{color:var(--fg)}
+  .field-err{display:none;color:#ff8787;font-size:11.5px;line-height:1.4;margin-top:6px}
+  .field.invalid .field-err{display:block}
+  .field.invalid input,.field.invalid textarea{border-color:#ff8787 !important;box-shadow:0 0 0 3px rgba(255,100,100,.13) !important}
+  html.light .field-err{color:#c0392b}
 </style>
 </head>
 <body>
@@ -248,15 +252,18 @@
             <div class="field">
               <label for="cname">Name</label>
               <input id="cname" name="name" type="text" placeholder="Ada Lovelace" required />
+              <span class="field-err" id="errName"></span>
             </div>
             <div class="field">
               <label for="cemail">Email</label>
               <input id="cemail" name="email" type="email" placeholder="you@company.com" required />
+              <span class="field-err" id="errEmail"></span>
             </div>
           </div>
           <div class="field">
             <label for="cmessage">Message</label>
             <textarea id="cmessage" name="message" rows="5" placeholder="Write your message here…" required></textarea>
+            <span class="field-err" id="errMsg"></span>
           </div>
         </div>
 
@@ -396,10 +403,32 @@ function showToast(){
   toastTimer = setTimeout(()=>toast.classList.remove('show'), 5000);
 }
 
+// ---- form validation (inline, per field) ----
+const fName=document.getElementById('cname'), fEmail=document.getElementById('cemail'), fMsg=document.getElementById('cmessage');
+const emailRe=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+function setErr(input, msg){
+  const field=input.closest('.field');
+  const box=field.querySelector('.field-err');
+  if(msg){ field.classList.add('invalid'); box.textContent=msg; input.setAttribute('aria-invalid','true'); }
+  else { field.classList.remove('invalid'); box.textContent=''; input.removeAttribute('aria-invalid'); }
+  return !msg;
+}
+function checkName(){ return setErr(fName, fName.value.trim() ? '' : 'Please enter your name.'); }
+function checkEmail(){ const v=fEmail.value.trim();
+  return setErr(fEmail, !v ? 'Please enter your email.' : (emailRe.test(v) ? '' : 'Enter a valid email, like you@company.com.')); }
+function checkMsg(){ const v=fMsg.value.trim();
+  return setErr(fMsg, !v ? 'Please write a message.' : (v.length<10 ? 'A little more detail helps (at least 10 characters).' : '')); }
+function validateAll(){ const a=checkName(), b=checkEmail(), c=checkMsg(); return a && b && c; }
+// re-check a field the moment the user fixes it (only after it has already errored, so it doesn't nag while first typing)
+[[fName,checkName],[fEmail,checkEmail],[fMsg,checkMsg]].forEach(([el,fn])=>{
+  el.addEventListener('blur', fn);
+  el.addEventListener('input', ()=>{ if(el.closest('.field').classList.contains('invalid')) fn(); });
+});
+
 form.addEventListener('submit', async (e)=>{
   e.preventDefault();
   okMsg.classList.remove('show'); errMsg.classList.remove('show');
-  if(!form.checkValidity()){ form.reportValidity(); return; }
+  if(!validateAll()){ const bad=form.querySelector('.field.invalid input,.field.invalid textarea'); if(bad) bad.focus(); return; }
 
   if(!WEB3FORMS_ACCESS_KEY || WEB3FORMS_ACCESS_KEY === 'YOUR_ACCESS_KEY_HERE'){
     errMsg.classList.add('show');
