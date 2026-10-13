@@ -159,8 +159,7 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
   .sprev::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;
     background:linear-gradient(105deg,transparent 30%,rgba(255,255,255,.14) 46%,rgba(255,255,255,.28) 50%,rgba(255,255,255,.14) 54%,transparent 70%);
     background-size:260% 100%;background-position:160% 0;background-repeat:no-repeat}
-  .sprev.on::after{animation:sprev-glint .9s ease .06s 1}
-  .sprev.on:hover::after{animation:sprev-glint .7s ease 1}
+  .sprev.glint::after{animation:sprev-glint .8s ease 1}
   @keyframes sprev-glint{from{background-position:160% 0}to{background-position:-60% 0}}
   @media(prefers-reduced-motion:reduce){.sprev::after{display:none}}
   .sprev .sp-bar{height:4px;background:var(--sp-tint,var(--accent))}
@@ -922,6 +921,9 @@ function attachSocialPreview(a,c){
     card.style.setProperty('--sp-ax', Math.max(14, Math.min(ax, cw-14))+'px');
     card.style.left=left+'px'; card.style.top=top+'px';
     card.style.visibility='';
+    // replay the glint on every card (the shared element stays mounted, so
+    // restart the animation by removing the class, forcing reflow, re-adding)
+    card.classList.remove('glint'); void card.offsetWidth; card.classList.add('glint');
   };
   a.addEventListener('mouseenter',()=>{ clearTimeout(card._hideT); showT=setTimeout(place,110); });
   a.addEventListener('mouseleave',()=>{ clearTimeout(showT); card._hideT=setTimeout(()=>card.classList.remove('on'),160); });
