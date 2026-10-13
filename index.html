@@ -153,7 +153,16 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
     transition:opacity .16s ease, transform .16s ease;
     background:var(--card);border:1px solid var(--border-2);border-radius:14px;
     box-shadow:0 16px 40px rgba(0,0,0,.45), 0 2px 8px rgba(0,0,0,.3);overflow:hidden}
-  .sprev.on{opacity:1;transform:translateY(0) scale(1)}
+  .sprev.on{opacity:1;transform:translateY(0) scale(1);pointer-events:auto;cursor:pointer}
+  .sprev:hover{border-color:var(--sp-tint,var(--border-2))}
+  /* light glint — a soft diagonal sheen sweeps across when the card appears or on hover */
+  .sprev::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+    background:linear-gradient(105deg,transparent 30%,rgba(255,255,255,.14) 46%,rgba(255,255,255,.28) 50%,rgba(255,255,255,.14) 54%,transparent 70%);
+    background-size:260% 100%;background-position:160% 0;background-repeat:no-repeat}
+  .sprev.on::after{animation:sprev-glint .9s ease .06s 1}
+  .sprev.on:hover::after{animation:sprev-glint .7s ease 1}
+  @keyframes sprev-glint{from{background-position:160% 0}to{background-position:-60% 0}}
+  @media(prefers-reduced-motion:reduce){.sprev::after{display:none}}
   .sprev .sp-bar{height:4px;background:var(--sp-tint,var(--accent))}
   .sprev .sp-top{display:flex;align-items:center;gap:11px;padding:14px 14px 12px}
   .sprev .sp-av{width:42px;height:42px;border-radius:50%;object-fit:cover;border:1px solid var(--border);flex:none}
@@ -884,11 +893,19 @@ function attachSocialPreview(a,c){
       '<div class="sp-id"><div class="sp-name">Magdaleena</div><div class="sp-handle"></div></div></div>'+
       '<div class="sp-foot"><span class="sp-glyph"></span><span class="sp-plat"></span><span class="sp-sub"></span></div>'+
       '<div class="sp-arrow"></div>';
+    card.setAttribute('role','link'); card.tabIndex=-1;
+    // the card itself is clickable: opens whatever link it is currently previewing
+    const openCur=()=>{ if(card._href){ card._ext ? window.open(card._href,'_blank','noopener') : (location.href=card._href); } };
+    card.addEventListener('click',openCur);
+    // keep the card alive while the mouse is on it, so it can be clicked
+    card.addEventListener('mouseenter',()=>clearTimeout(card._hideT));
+    card.addEventListener('mouseleave',()=>{ card._hideT=setTimeout(()=>card.classList.remove('on'),80); });
     document.body.appendChild(card);
   }
-  let showT, hideT;
+  let showT;
   const place=()=>{
     const r=a.getBoundingClientRect();
+    card._href=c.href; card._ext=c.href.startsWith('http');
     card.style.setProperty('--sp-tint', c.tint||'var(--accent)');
     card.querySelector('.sp-handle').textContent=c.h;
     card.querySelector('.sp-glyph').innerHTML=c.icon;
@@ -906,8 +923,8 @@ function attachSocialPreview(a,c){
     card.style.left=left+'px'; card.style.top=top+'px';
     card.style.visibility='';
   };
-  a.addEventListener('mouseenter',()=>{ clearTimeout(hideT); showT=setTimeout(place,110); });
-  a.addEventListener('mouseleave',()=>{ clearTimeout(showT); hideT=setTimeout(()=>card.classList.remove('on'),80); });
+  a.addEventListener('mouseenter',()=>{ clearTimeout(card._hideT); showT=setTimeout(place,110); });
+  a.addEventListener('mouseleave',()=>{ clearTimeout(showT); card._hideT=setTimeout(()=>card.classList.remove('on'),160); });
   a.addEventListener('mousedown',()=>{ clearTimeout(showT); card.classList.remove('on'); });
 }
 
