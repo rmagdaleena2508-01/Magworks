@@ -148,6 +148,30 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
   .csq svg{width:19px;height:19px}
   .csq .ext{position:absolute;top:5px;right:5px;width:9px;height:9px;opacity:.5}
 
+  /* ---- social preview card (hover, first 4 contacts, laptop only) ---- */
+  .sprev{position:fixed;z-index:120;width:264px;pointer-events:none;opacity:0;transform:translateY(6px) scale(.98);
+    transition:opacity .16s ease, transform .16s ease;
+    background:var(--card);border:1px solid var(--border-2);border-radius:14px;
+    box-shadow:0 16px 40px rgba(0,0,0,.45), 0 2px 8px rgba(0,0,0,.3);overflow:hidden}
+  .sprev.on{opacity:1;transform:translateY(0) scale(1)}
+  .sprev .sp-bar{height:4px;background:var(--sp-tint,var(--accent))}
+  .sprev .sp-top{display:flex;align-items:center;gap:11px;padding:14px 14px 12px}
+  .sprev .sp-av{width:42px;height:42px;border-radius:50%;object-fit:cover;border:1px solid var(--border);flex:none}
+  .sprev .sp-id{min-width:0}
+  .sprev .sp-name{font-size:14px;font-weight:600;color:var(--fg);line-height:1.2}
+  .sprev .sp-handle{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-top:2px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sprev .sp-foot{display:flex;align-items:center;gap:9px;padding:11px 14px;border-top:1px solid var(--border);
+    background:var(--card-2)}
+  .sprev .sp-foot .sp-glyph{width:16px;height:16px;flex:none;color:var(--sp-tint,var(--fg))}
+  .sprev .sp-foot .sp-glyph svg{width:16px;height:16px;display:block}
+  .sprev .sp-plat{font-size:12px;font-weight:600;color:var(--fg)}
+  .sprev .sp-sub{font-size:11.5px;color:var(--muted-2);margin-left:auto;white-space:nowrap}
+  .sprev .sp-arrow{position:absolute;bottom:-6px;left:var(--sp-ax,50%);transform:translateX(-50%) rotate(45deg);
+    width:11px;height:11px;background:var(--card-2);border-right:1px solid var(--border-2);border-bottom:1px solid var(--border-2)}
+  .sprev.below .sp-arrow{bottom:auto;top:-6px;transform:translateX(-50%) rotate(225deg);background:var(--card)}
+  @media(prefers-reduced-motion:reduce){.sprev{transition:none}}
+
   /* ---- projects ---- */
   /* horizontal snap-scroll of vertical (portrait) cards */
   .pgrid{display:flex;gap:16px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;
@@ -803,10 +827,10 @@ const STACK = {
 const CATS = [['all','All'],['frontend','Frontend'],['backend','Backend'],['ai','AI & Agents'],['tools','Tools']];
 
 const CHANNELS = [
-  { k:'GitHub', href:'https://github.com/rmagdaleena2508-01', icon:`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.85 9.73.5.1.68-.22.68-.49 0-.24-.01-.87-.01-1.71-2.78.62-3.37-1.37-3.37-1.37-.46-1.18-1.11-1.5-1.11-1.5-.9-.63.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05a9.34 9.34 0 0 1 5 0c1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.94-2.34 4.81-4.57 5.06.36.32.68.94.68 1.9 0 1.37-.01 2.47-.01 2.81 0 .27.18.6.69.49A10.03 10.03 0 0 0 22 12.25C22 6.58 17.52 2 12 2Z"/></svg>` },
-  { k:'LinkedIn', href:'https://www.linkedin.com/in/rmagdaleena-aiengineer/', icon:`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.35V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0z"/></svg>` },
-  { k:'X / Twitter', href:'https://x.com/timotheoszzzz', icon:`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.9 1.15h3.68l-8.04 9.19L24 22.85h-7.41l-5.8-7.58-6.64 7.58H.46l8.6-9.83L0 1.15h7.59l5.24 6.93 6.07-6.93zm-1.29 19.5h2.04L6.49 3.24H4.3l13.31 17.41z"/></svg>` },
-  { k:'LeetCode', href:'https://leetcode.com/u/magdaleena-r/', icon:`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 1.271 1.818l4.277 4.193.039.038c2.248 2.165 5.852 2.133 8.063-.074l2.396-2.392c.54-.54.54-1.414.003-1.955a1.378 1.378 0 0 0-1.951-.003l-2.396 2.392a3.021 3.021 0 0 1-4.205.038l-.02-.019-4.276-4.193c-.652-.64-.972-1.469-.948-2.263a2.68 2.68 0 0 1 .066-.523 2.545 2.545 0 0 1 .619-1.164L9.13 8.114c1.058-1.134 3.204-1.27 4.43-.278l3.501 2.831c.593.48 1.461.387 1.94-.207a1.384 1.384 0 0 0-.207-1.943l-3.5-2.831c-.8-.647-1.766-1.045-2.774-1.202l2.015-2.158A1.384 1.384 0 0 0 13.483 0zm-2.866 12.815a1.38 1.38 0 0 0-1.38 1.382 1.38 1.38 0 0 0 1.38 1.382H20.79a1.38 1.38 0 0 0 1.38-1.382 1.38 1.38 0 0 0-1.38-1.382z"/></svg>` },
+  { k:'GitHub', href:'https://github.com/rmagdaleena2508-01', h:'@rmagdaleena2508-01', s:'Builds in public', tint:'#8b949e', icon:`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.85 9.73.5.1.68-.22.68-.49 0-.24-.01-.87-.01-1.71-2.78.62-3.37-1.37-3.37-1.37-.46-1.18-1.11-1.5-1.11-1.5-.9-.63.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05a9.34 9.34 0 0 1 5 0c1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.94-2.34 4.81-4.57 5.06.36.32.68.94.68 1.9 0 1.37-.01 2.47-.01 2.81 0 .27.18.6.69.49A10.03 10.03 0 0 0 22 12.25C22 6.58 17.52 2 12 2Z"/></svg>` },
+  { k:'LinkedIn', href:'https://www.linkedin.com/in/rmagdaleena-aiengineer/', h:'in/rmagdaleena-aiengineer', s:'18 yo · AI Engineer', tint:'#0a66c2', icon:`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.35V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0z"/></svg>` },
+  { k:'X / Twitter', href:'https://x.com/timotheoszzzz', h:'@timotheoszzzz', s:'Building in the open', tint:'#71767b', icon:`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.9 1.15h3.68l-8.04 9.19L24 22.85h-7.41l-5.8-7.58-6.64 7.58H.46l8.6-9.83L0 1.15h7.59l5.24 6.93 6.07-6.93zm-1.29 19.5h2.04L6.49 3.24H4.3l13.31 17.41z"/></svg>` },
+  { k:'LeetCode', href:'https://leetcode.com/u/magdaleena-r/', h:'u/magdaleena-r', s:'Grinding problems', tint:'#ffa116', icon:`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 1.271 1.818l4.277 4.193.039.038c2.248 2.165 5.852 2.133 8.063-.074l2.396-2.392c.54-.54.54-1.414.003-1.955a1.378 1.378 0 0 0-1.951-.003l-2.396 2.392a3.021 3.021 0 0 1-4.205.038l-.02-.019-4.276-4.193c-.652-.64-.972-1.469-.948-2.263a2.68 2.68 0 0 1 .066-.523 2.545 2.545 0 0 1 .619-1.164L9.13 8.114c1.058-1.134 3.204-1.27 4.43-.278l3.501 2.831c.593.48 1.461.387 1.94-.207a1.384 1.384 0 0 0-.207-1.943l-3.5-2.831c-.8-.647-1.766-1.045-2.774-1.202l2.015-2.158A1.384 1.384 0 0 0 13.483 0zm-2.866 12.815a1.38 1.38 0 0 0-1.38 1.382 1.38 1.38 0 0 0 1.38 1.382H20.79a1.38 1.38 0 0 0 1.38-1.382 1.38 1.38 0 0 0-1.38-1.382z"/></svg>` },
   { k:'Email', href:'mailto:rmagdaleenawork@gmail.com', icon:`<svg viewBox="0 0 24 24" fill="currentColor"><path d="M1.5 5.25A2.25 2.25 0 0 1 3.75 3h16.5A2.25 2.25 0 0 1 22.5 5.25v13.5A2.25 2.25 0 0 1 20.25 21H3.75A2.25 2.25 0 0 1 1.5 18.75V5.25Zm2.05-.35 8.45 6.02 8.45-6.02a.75.75 0 0 0-.2-.03H3.75c-.07 0-.14.01-.2.03ZM21 6.6l-8.57 6.1a.75.75 0 0 1-.86 0L3 6.6v12.15c0 .41.34.75.75.75h16.5c.41 0 .75-.34.75-.75V6.6Z"/></svg>` },
 ];
 
@@ -841,10 +865,51 @@ const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=nu
 
 // contact icons
 const cRow=document.getElementById('contactRow');
-CHANNELS.forEach(c=>{
+CHANNELS.forEach((c,i)=>{
   const a=el('a','csq'); a.href=c.href; a.title=c.k; if(c.href.startsWith('http')){a.target='_blank';a.rel='noopener';}
-  a.innerHTML=c.icon; cRow.appendChild(a);
+  a.innerHTML=c.icon;
+  if(i<4 && c.h) attachSocialPreview(a,c);   // hover preview on the first four socials (laptop only)
+  cRow.appendChild(a);
 });
+
+// hover preview cards for the first four social links — a little profile card
+// that lifts above the icon. Laptop only: on touch, a tap just opens the link.
+function attachSocialPreview(a,c){
+  if(matchMedia('(hover:none)').matches || !matchMedia('(hover:hover)').matches) return;
+  let card=document.getElementById('sprev');
+  if(!card){
+    card=document.createElement('div'); card.className='sprev'; card.id='sprev';
+    card.innerHTML='<div class="sp-bar"></div>'+
+      '<div class="sp-top"><img class="sp-av" src="./assets/avatar.jpeg" alt="" width="42" height="42"/>'+
+      '<div class="sp-id"><div class="sp-name">Magdaleena</div><div class="sp-handle"></div></div></div>'+
+      '<div class="sp-foot"><span class="sp-glyph"></span><span class="sp-plat"></span><span class="sp-sub"></span></div>'+
+      '<div class="sp-arrow"></div>';
+    document.body.appendChild(card);
+  }
+  let showT, hideT;
+  const place=()=>{
+    const r=a.getBoundingClientRect();
+    card.style.setProperty('--sp-tint', c.tint||'var(--accent)');
+    card.querySelector('.sp-handle').textContent=c.h;
+    card.querySelector('.sp-glyph').innerHTML=c.icon;
+    card.querySelector('.sp-plat').textContent=c.k;
+    card.querySelector('.sp-sub').textContent=c.s||'';
+    card.style.visibility='hidden'; card.classList.add('on');
+    const cw=card.offsetWidth, ch=card.offsetHeight, pad=10;
+    let left=r.left+r.width/2-cw/2;
+    left=Math.max(pad, Math.min(left, innerWidth-cw-pad));
+    let top=r.top-ch-10, below=false;
+    if(top<pad){ top=r.bottom+10; below=true; }       // flip under if no room above
+    card.classList.toggle('below', below);
+    const ax=r.left+r.width/2-left;                     // arrow points at the icon
+    card.style.setProperty('--sp-ax', Math.max(14, Math.min(ax, cw-14))+'px');
+    card.style.left=left+'px'; card.style.top=top+'px';
+    card.style.visibility='';
+  };
+  a.addEventListener('mouseenter',()=>{ clearTimeout(hideT); showT=setTimeout(place,110); });
+  a.addEventListener('mouseleave',()=>{ clearTimeout(showT); hideT=setTimeout(()=>card.classList.remove('on'),80); });
+  a.addEventListener('mousedown',()=>{ clearTimeout(showT); card.classList.remove('on'); });
+}
 
 // projects
 const pg=document.getElementById('projectGrid');
