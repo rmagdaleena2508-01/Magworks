@@ -350,19 +350,6 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
 
   /* ---- active nav link ---- */
   #about,#contact,#projects,#stack,#buildlog{scroll-margin-top:64px}
-
-  /* ---- scroll snap: on phones the page settles section-by-section ----
-     proximity (not mandatory) so a section taller than the screen is never
-     trapped — you can still stop mid-section; it only nudges to the nearest
-     section top when you land close. scroll-padding-top keeps the snapped
-     top clear of the fixed header (--snap-pad is set to the header height). */
-  @media(max-width:680px){
-    html{scroll-snap-type:y proximity;scroll-padding-top:var(--snap-pad,72px)}
-    .row{scroll-snap-align:start}
-  }
-  @media(max-width:680px) and (prefers-reduced-motion:reduce){
-    html{scroll-snap-type:none}
-  }
   /* ---- build log ---- */
   .buildlog-note{font-family:var(--mono);font-size:11.5px;line-height:1.5;color:var(--muted-2);margin-bottom:16px}
   .buildlog{display:flex;flex-direction:column}
@@ -874,10 +861,7 @@ const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=nu
 // keep the first section clear of the fixed header — pad <main> to the header's real
 // height so the profile's top gap matches its bottom gap (was overlapped -> looked uneven)
 (function(){ const h=document.querySelector('header'), m=document.querySelector('main'); if(!h||!m) return;
-  const set=()=>{ const hh=Math.ceil(h.getBoundingClientRect().height);
-    m.style.paddingTop=hh+'px';
-    document.documentElement.style.setProperty('--snap-pad', hh+'px');   // keep scroll-snap clear of the fixed header
-  };
+  const set=()=>{ m.style.paddingTop=Math.ceil(h.getBoundingClientRect().height)+'px'; };
   set(); addEventListener('resize',set); addEventListener('load',set);
 })();
 
