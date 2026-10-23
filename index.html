@@ -103,19 +103,7 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
 
 
   /* ---- profile ---- */
-  .profile{display:flex;gap:20px;align-items:center;position:relative}
-  /* pixel shiba anchored in the card's bottom-right, sitting on the lower edge.
-     Does not roam or follow the cursor — it plays a look/turn/sit sequence on
-     load and when clicked. */
-  .cardpet{position:absolute;right:18px;bottom:-6px;width:82px;height:auto;
-    image-rendering:pixelated;cursor:pointer;
-    filter:drop-shadow(0 4px 6px rgba(0,0,0,.3))}
-  .cardpet.petbob{animation:pet-bob 1.7s ease-in-out infinite}
-  @keyframes pet-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
-  .cardpet:hover{filter:drop-shadow(0 4px 6px rgba(0,0,0,.3)) brightness(1.06)}
-  @media(prefers-reduced-motion:reduce){.cardpet.petbob{animation:none}}
-  @media(max-width:640px){ .cardpet{width:64px;right:8px;bottom:-4px} }
-  @media(max-width:430px){ .cardpet{display:none} }
+  .profile{display:flex;gap:20px;align-items:center}
   @media(max-width:560px){
     .profile{gap:14px}
     .avatar{width:64px !important;height:64px !important;border-radius:14px}
@@ -653,7 +641,6 @@ document.addEventListener('DOMContentLoaded',function(){
         <div class="role" id="roleText">18 yo, AI Engineer</div>
         <div class="loc">CS @ SRMIST · India · <span id="clock"></span></div>
       </div>
-      <img class="cardpet" id="cardPet" src="./assets/shiba/16.png" alt="pixel shiba — click me" title="woof! click me" width="82" height="73" decoding="async" />
     </div>
   </div>
 
@@ -1442,6 +1429,5 @@ document.querySelectorAll('.rv').forEach(x=>io.observe(x));
 addEventListener('load',()=>document.querySelectorAll('.rv').forEach(x=>{const r=x.getBoundingClientRect();if(r.top<innerHeight)x.classList.add('in');}));
 setTimeout(()=>document.querySelectorAll('.rv').forEach(x=>x.classList.add('in')),1500);
 </script>
-<script defer src="./assets/card-shiba.js"></script>
 </body>
 </html>
