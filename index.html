@@ -115,6 +115,12 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
     background:linear-gradient(155deg,#2a3350,#141420);display:grid;place-items:center;position:relative;overflow:hidden}
   .avatar span{font-family:var(--serif);font-size:38px;color:var(--fg)}
   .avatar img{width:100%;height:100%;object-fit:cover;display:block}
+  /* page-mascot: riso fox that watches the cursor and reacts on click */
+  .mascot{position:relative;display:block;width:100%;height:100%;padding:0;border:0;background:transparent;-webkit-appearance:none;appearance:none;cursor:pointer;-webkit-user-select:none;user-select:none}
+  .mascot-squash{position:relative;display:block;width:100%;height:100%;transform-origin:50% 78%}
+  .mascot-layer{position:absolute;inset:0;background-size:300% 300%;background-repeat:no-repeat;background-position:50% 50%}
+  .mascot-dir{background-image:url(./assets/mascots/fox-riso-directions.webp)}
+  .mascot-rea{background-image:url(./assets/mascots/fox-riso-reactions.webp);opacity:0}
   .profile-main{flex:1;min-width:0}
   .ptop{display:flex;align-items:center;justify-content:space-between;gap:12px}
   .pname{font-family:var(--serif);font-size:32px;line-height:1.1}
@@ -633,7 +639,7 @@ document.addEventListener('DOMContentLoaded',function(){
 
   <div class="row">
     <div class="row-inner profile rv">
-      <div class="avatar"><img id="avatarImg" src="./assets/avatar.jpeg" alt="Magdaleena" width="96" height="96" fetchpriority="high" decoding="async" /></div>
+      <div class="avatar"><button type="button" class="mascot" id="mascot" aria-label="Boop the fox"><span class="mascot-squash"><span class="mascot-layer mascot-dir"></span><span class="mascot-layer mascot-rea"></span></span></button></div>
       <div class="profile-main">
         <div class="ptop">
           <div class="pname">Magdaleena</div>
@@ -1013,6 +1019,63 @@ function playAvatarSound(){
   }
   knock(now,200); knock(now+0.13,188);
 }
+
+// page-mascot — vanilla port of the <Mascot> component (watch cursor + boop)
+(function(){
+  const btn=document.getElementById('mascot'); if(!btn) return;
+  const dirEl=btn.querySelector('.mascot-dir'), reaEl=btn.querySelector('.mascot-rea');
+  const squash=btn.querySelector('.mascot-squash');
+  const DIRECTIONS=['up-left','up','up-right','left','center','right','down-left','down','down-right'];
+  const REACTIONS=['blink','heart','sparkle','surprised','wink','bashful','sleepy','dizzy','delighted'];
+  const CLOCKWISE=['right','down-right','down','down-left','left','up-left','up','up-right'];
+  const SECTOR=Math.PI*2/CLOCKWISE.length, HYST=0.12, DEAD=58;
+  const PAYOFFS=['heart','sparkle','delighted'];
+  const BOOP_PAYOFF=120, BOOP_END=560, SQUASH_MS=420, DIZZY_AFTER=4, DIZZY_WINDOW=1600, DIZZY_END=1100;
+  const pos=i=>((i%3)*50)+'% '+(Math.floor(i/3)*50)+'%';
+  const wrap=a=>Math.atan2(Math.sin(a),Math.cos(a));
+  function setDir(d){ dirEl.style.backgroundPosition=pos(DIRECTIONS.indexOf(d)); }
+  function setRea(r){
+    if(r===null){ reaEl.style.opacity='0'; dirEl.style.opacity='1'; return; }
+    reaEl.style.backgroundPosition=pos(REACTIONS.indexOf(r)); reaEl.style.opacity='1'; dirEl.style.opacity='0';
+  }
+  // cursor tracking (fine pointer only)
+  if(window.matchMedia('(hover: hover) and (pointer: fine)').matches){
+    let sector=-1, p=null;
+    const aim=()=>{
+      if(!p) return;
+      const b=btn.getBoundingClientRect();
+      const dx=p.x-(b.left+b.width/2), dy=p.y-(b.top+b.height/2);
+      if(Math.hypot(dx,dy)<DEAD){ sector=-1; setDir('center'); return; }
+      const ang=Math.atan2(dy,dx);
+      if(sector!==-1 && Math.abs(wrap(ang-sector*SECTOR))<SECTOR/2+HYST) return;
+      sector=(Math.round(ang/SECTOR)+CLOCKWISE.length)%CLOCKWISE.length;
+      setDir(CLOCKWISE[sector]);
+    };
+    window.addEventListener('pointermove',e=>{ p={x:e.clientX,y:e.clientY}; aim(); },{passive:true});
+    window.addEventListener('scroll',aim,{passive:true});
+  }
+  // boop
+  const SQUASH=[
+    {transform:'scale(1,1)',easing:'ease-in'},
+    {transform:'scale(1.10,0.86)',offset:0.18,easing:'ease-out'},
+    {transform:'scale(0.95,1.08)',offset:0.45,easing:'ease-in-out'},
+    {transform:'scale(1.03,0.97)',offset:0.72,easing:'ease-in-out'},
+    {transform:'scale(1,1)'}
+  ];
+  let timers=[], count=0, at=0;
+  const later=(ms,r)=>timers.push(setTimeout(()=>setRea(r),ms));
+  btn.addEventListener('click',()=>{
+    timers.forEach(clearTimeout); timers=[];
+    const now=Date.now();
+    count=(now-at<DIZZY_WINDOW)?count+1:1; at=now;
+    if(count>=DIZZY_AFTER){ count=0; setRea('dizzy'); later(DIZZY_END,null); }
+    else { setRea('blink'); later(BOOP_PAYOFF,PAYOFFS[(count-1)%PAYOFFS.length]); later(BOOP_END,null); }
+    try{ if(typeof unlockAudio==='function') unlockAudio(); playAvatarSound(); }catch(e){}
+    if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches && squash.animate){
+      squash.animate(SQUASH,{duration:SQUASH_MS,easing:'linear'});
+    }
+  });
+})();
 
 // A tiny silent looping WAV — playing it as MEDIA on iOS moves the audio session
 // to "playback", so Web Audio output is heard even with the ring/silent switch on.
