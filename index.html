@@ -1306,39 +1306,56 @@ function updateProg(){ const h=document.documentElement; const max=h.scrollHeigh
   if(scrollBlur) scrollBlur.classList.toggle('on', h.scrollTop>4); }
 addEventListener('scroll',updateProg,{passive:true}); addEventListener('resize',updateProg); updateProg();
 
-// active section highlight in nav
+// nav underline: a self-correcting rAF slider that always eases to its target link
+// (the hovered link, else the active section's link). It can never park mid-scroll.
 const navLinks=[...document.querySelectorAll('.nav-links a')];
 const navInd=document.querySelector('.nav-ind');
-// The underline is driven every scroll frame (not eased on a state change), so it
-// tracks the scroll continuously with zero trailing. Sections in vertical order,
-// each mapped to its nav link.
+const navLinksEl=document.querySelector('.nav-links');
+// which in-page section each link tracks (Writing is a separate page -> hover only)
 const SPY=[['top','#top'],['contact','#contact'],['projects','#projects'],['stack','#stack']];
 const linkFor={}; navLinks.forEach(a=>linkFor[a.getAttribute('href')]=a);
 const spySecs=SPY.map(([id,href])=>({el:document.getElementById(id),link:linkFor[href]})).filter(s=>s.el&&s.link);
-if(navInd) navInd.style.transition='none'; // per-frame drive, no CSS trailing
+// underline sits exactly under a link's text (the link has 12px horizontal padding)
 const geo=link=>({x:link.offsetLeft+12,w:Math.max(0,link.offsetWidth-24)});
-let curIdx=-1;
-function updateSpy(){
-  if(!navInd||!spySecs.length) return;
-  const line=90, BAND=110, y=scrollY;
-  // scroll offset at which each section reaches the line just under the sticky nav
-  const b=spySecs.map((s,i)=> i===0 ? 0 : s.el.getBoundingClientRect().top+y-line );
-  let i=0; for(let k=0;k<b.length;k++){ if(y>=b[k]-0.5) i=k; }
-  // glide toward the next link over the last BAND px before its boundary
-  let g=geo(spySecs[i].link);
-  if(i<b.length-1){
-    const f=Math.min(1,Math.max(0,(y-(b[i+1]-BAND))/BAND));
-    if(f>0){ const g2=geo(spySecs[i+1].link); g={x:g.x+(g2.x-g.x)*f, w:g.w+(g2.w-g.w)*f}; }
+
+if(navInd){
+  const EASE='cubic-bezier(.4,0,.2,1)';
+  let hovering=null;                                                   // the hovered link, or null
+  let activeLink=(spySecs[0]&&spySecs[0].link)||navLinks[0]||null;     // active section's link
+  const current=()=> hovering || activeLink;                          // underline target
+  function move(animate){
+    const link=current(); if(!link) return;
+    navInd.style.transition = animate ? `transform .28s ${EASE},width .28s ${EASE},opacity .2s ease` : 'none';
+    const g=geo(link);
+    navInd.style.transform='translateX('+g.x+'px)';
+    navInd.style.width=g.w+'px';
+    navInd.style.opacity='1';
   }
-  navInd.style.width=g.w+'px'; navInd.style.transform='translateX('+g.x+'px)'; navInd.style.opacity='1';
-  // colour switches at the midpoint of the crossing
-  const activeIdx=(i<b.length-1 && y>=b[i+1]-BAND/2)?i+1:i;
-  if(activeIdx!==curIdx){ curIdx=activeIdx; navLinks.forEach(a=>a.classList.toggle('active',a===spySecs[activeIdx].link)); }
+  // scroll-spy only decides which link is active; the underline always sits on a real link
+  let spyRaf=0;
+  function updateActive(){
+    if(!spySecs.length) return;
+    const line=70, y=scrollY;
+    const b=spySecs.map((s,i)=> i===0 ? 0 : s.el.getBoundingClientRect().top+y-line );
+    let i=0; for(let k=0;k<b.length;k++){ if(y>=b[k]-1) i=k; }
+    const link=spySecs[i].link;
+    if(link!==activeLink){
+      activeLink=link;
+      navLinks.forEach(a=>a.classList.toggle('active',a===link));
+      if(!hovering) move(true);
+    }
+  }
+  addEventListener('scroll',()=>{ if(!spyRaf) spyRaf=requestAnimationFrame(()=>{ updateActive(); spyRaf=0; }); },{passive:true});
+  // hover takes over; leaving the bar hands control back to the active link
+  navLinks.forEach(a=>a.addEventListener('pointerenter',()=>{ hovering=a; move(true); }));
+  if(navLinksEl) navLinksEl.addEventListener('pointerleave',()=>{ hovering=null; move(true); });
+  // init, and keep it pinned (no animation) through layout changes
+  navLinks.forEach(a=>a.classList.toggle('active',a===activeLink));
+  move(false);
+  addEventListener('resize',()=>move(false));
+  addEventListener('load',()=>move(false));
+  updateActive();
 }
-let spyRaf=0;
-addEventListener('scroll',()=>{ if(!spyRaf) spyRaf=requestAnimationFrame(()=>{ updateSpy(); spyRaf=0; }); },{passive:true});
-addEventListener('resize',()=>{ curIdx=-1; updateSpy(); });
-updateSpy();
 
 // cursor spotlight — follows the pointer (desktop only)
 const glow=document.querySelector('.cursor-glow');
