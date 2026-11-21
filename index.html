@@ -50,8 +50,8 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
-  body{background:var(--bg);color:var(--fg);font-family:var(--sans);line-height:1.6;font-size:15px;
-    -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;transition:background .25s,color .25s;overflow-x:hidden}
+  body{background:var(--bg);color:var(--fg);font-family:var(--sans);line-height:1.6;font-size:15px;position:relative;
+    -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;transition:background .25s,color .25s;overflow-x:hidden;text-wrap:pretty}
   a{color:inherit;text-decoration:none}
   img{max-width:100%;display:block}
   button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
@@ -62,24 +62,47 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
   /* ---- full-bleed dashed section rows: horizontal rule spans viewport, content re-centers ---- */
   .row{width:100vw;margin-left:calc(50% - 50vw);border-top:1px dashed var(--dash)}
   .row:first-of-type{border-top:none}
-  .row-inner{max-width:var(--wrap);margin:0 auto;padding:40px 24px;
-    border-left:1px dashed var(--dash);border-right:1px dashed var(--dash)}
+  .row-inner{max-width:var(--wrap);margin:0 auto;padding:40px 24px;position:relative}
+  /* one continuous dashed frame for the vertical rails — never breaks between sections */
+  .page-rails{position:absolute;top:0;bottom:0;left:50%;transform:translateX(-50%);width:min(var(--wrap),100%);
+    border-left:1px dashed var(--dash);border-right:1px dashed var(--dash);pointer-events:none;z-index:-1}
   @media(max-width:640px){.row-inner{padding:28px 18px}}
 
   /* ---- nav ---- */
   header{position:fixed;top:0;left:0;right:0;z-index:100;width:100vw;
     background:color-mix(in srgb, var(--nav-bg) 85%, transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
     border-bottom:1px dashed var(--dash)}
-  .nav-inner{max-width:var(--wrap);margin:0 auto;height:52px;display:flex;align-items:center;justify-content:space-between;
-    padding:0 24px;border-left:1px dashed var(--dash);border-right:1px dashed var(--dash)}
+  .nav-inner{max-width:var(--wrap);margin:0 auto;height:48px;display:flex;align-items:center;justify-content:space-between;
+    padding:4px 12px;border-left:1px dashed var(--dash);border-right:1px dashed var(--dash)}
   .brand{display:inline-flex;align-items:center;line-height:0;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:opacity .2s ease,transform .2s ease}
   .brand:hover img{opacity:.82}
   .brand:active{transform:scale(.96)}
   .brand img{height:28px;width:auto;display:block;border-radius:7px}
   @media(max-width:560px){.brand img{height:26px}}
-  .nav-links{display:flex;align-items:center;gap:4px}
-  .nav-links a{font-size:13.5px;color:var(--muted);padding:8px 12px;border-radius:8px;transition:.2s}
-  .nav-links a:hover{color:var(--fg);background:var(--card)}
+  .nav-links{display:flex;align-items:center;gap:20px}
+  .nav-links a{font-size:14px;color:var(--muted);padding:4px 0;transition:color .2s}
+  .nav-links a:hover{color:var(--fg)}
+  /* More dropdown (overflow links) */
+  .nav-more{position:relative;display:flex;align-items:center;perspective:700px}
+  .nav-more-btn{display:inline-flex;align-items:center;gap:6px;font-size:14px;color:var(--muted);padding:4px 0;cursor:pointer;transition:color .2s}
+  .nav-more-btn:hover,.nav-more.open .nav-more-btn,.nav-more-btn.active{color:var(--fg)}
+  .nav-chev{width:11px;height:11px;fill:currentColor;transition:transform .25s ease;opacity:.8}
+  .nav-more.open .nav-chev{transform:rotate(180deg)}
+  /* paper-fold dropdown (CSI style): folds down from its top edge, items unfold in sequence */
+  .nav-menu{position:absolute;top:calc(100% + 10px);left:50%;min-width:160px;display:flex;flex-direction:column;gap:2px;padding:6px;
+    background:linear-gradient(180deg,color-mix(in srgb,var(--card-2) 78%,transparent),color-mix(in srgb,var(--card) 82%,transparent));
+    -webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4);
+    border:1px solid var(--border-2);border-radius:13px;box-shadow:0 18px 40px -14px rgba(0,0,0,.66),inset 0 1px 0 rgba(255,255,255,.08);
+    transform-origin:top center;transform:translateX(-50%) rotateX(-90deg);opacity:0;pointer-events:none;transform-style:preserve-3d;will-change:transform;
+    transition:transform .5s cubic-bezier(.33,1,.68,1),opacity .34s ease}
+  .nav-more.open .nav-menu{transform:translateX(-50%) rotateX(0);opacity:1;pointer-events:auto}
+  .nav-menu a{font-size:13.5px;color:var(--muted);padding:9px 10px;border-radius:8px;transform-origin:top center;transform:rotateX(-80deg);opacity:0;
+    transition:transform .44s cubic-bezier(.33,1,.68,1),opacity .3s ease,color .16s,background .16s}
+  .nav-more.open .nav-menu a{transform:rotateX(0);opacity:1}
+  .nav-more.open .nav-menu a:nth-child(1){transition-delay:.05s}
+  .nav-more.open .nav-menu a:nth-child(2){transition-delay:.11s}
+  .nav-more.open .nav-menu a:nth-child(3){transition-delay:.17s}
+  .nav-menu a:hover{color:var(--fg);background:var(--card-2)}
   .nav-right{display:flex;align-items:center;gap:6px}
   .icon-btn{width:34px;height:34px;display:grid;place-items:center;border:1px solid var(--border);border-radius:9px;color:var(--muted);transition:.2s}
   .icon-btn:hover{color:var(--fg);border-color:var(--border-2);background:var(--card)}
@@ -119,7 +142,7 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
   .ptop{display:flex;align-items:center;justify-content:space-between;gap:12px}
   .pname{font-family:var(--serif);font-size:32px;line-height:1.1}
   .role{margin-top:6px;font-size:16px;font-weight:600;color:var(--muted);min-height:22px}
-  .loc{margin-top:2px;font-size:12.5px;color:var(--muted-2)}
+  .loc{margin-top:2px;font-size:12.5px;color:var(--muted-2);font-variant-numeric:tabular-nums}
 
   /* ---- section title ---- */
   h2.sec{font-family:var(--serif);font-size:26px;font-weight:400;margin-bottom:18px}
@@ -361,9 +384,10 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
   @media(max-width:560px){.blog-item{grid-template-columns:1fr;gap:3px;padding:12px 0}}
   .nav-links{position:relative}
   .nav-links a.active{color:var(--fg)}
-  .nav-ind{position:absolute;bottom:2px;left:0;height:1.5px;width:0;border-radius:2px;background:var(--accent);
-    opacity:0;transform:translateX(0);pointer-events:none;will-change:transform,width;
-    transition:transform .16s cubic-bezier(.22,1,.36,1),width .16s cubic-bezier(.22,1,.36,1),opacity .15s ease}
+  /* active indicator: a small dot that slides under the active item (sam.larp.af style) */
+  .nav-ind{position:absolute;top:50%;left:0;width:4px;height:4px;border-radius:50%;background:var(--fg);
+    opacity:0;transform:translate(-50%,13px);pointer-events:none;will-change:left;
+    transition:opacity .2s ease}
 
   /* ---- tech pill tooltip ---- */
   .pgrid{perspective:1000px}
@@ -440,6 +464,7 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
 <script>if(location.hostname==='magdaleena.me'||location.hostname.endsWith('.vercel.app')){window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments);};var s=document.createElement('script');s.defer=true;s.src='/_vercel/insights/script.js';document.head.appendChild(s);}</script>
 </head>
 <body>
+<div class="page-rails" aria-hidden="true"></div>
 
 <div id="intro">
   <div class="intro-stage">
@@ -607,14 +632,19 @@ document.addEventListener('DOMContentLoaded',function(){
     <a class="brand" href="#top" aria-label="Magdaleena — home" title="Home"><img src="./assets/brand-icon.png" alt="Magdaleena" /></a>
     <nav class="nav-links">
       <a href="#top">Home</a>
-      <a href="#contact">Contact</a>
       <a href="#projects">Projects</a>
-      <a href="#stack">Stack</a>
-      <a href="./writing.html">Writing</a>
+      <a href="#about">Experience</a>
+      <div class="nav-more" id="navMore">
+        <button type="button" class="nav-more-btn" aria-haspopup="true" aria-expanded="false">More<svg class="nav-chev" viewBox="0 0 512 512" aria-hidden="true"><path d="M256 294.1 383 167c9.4-9.4 24.6-9.4 33.9 0s9.3 24.6 0 34L273 345c-9.1 9.1-23.7 9.3-33.1 .7L95 201.1c-4.7-4.7-7-10.9-7-17s2.3-12.3 7-17c9.4-9.4 24.6-9.4 33.9 0l127.1 127z"/></svg></button>
+        <div class="nav-menu" role="menu">
+          <a href="#stack" role="menuitem">Stack</a>
+          <a href="#contact" role="menuitem">Contact</a>
+          <a href="./writing.html" role="menuitem">Writing</a>
+        </div>
+      </div>
       <span class="nav-ind" aria-hidden="true"></span>
     </nav>
     <div class="nav-right">
-      <button class="icon-btn cmdk-open" id="cmdkOpen" aria-label="Open command menu" title="Command menu (⌘K)">⌘K</button>
       <button class="icon-btn theme-toggle" id="themeBtn" aria-label="Toggle theme" title="Toggle theme">
         <svg class="ic ic-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
         <svg class="ic ic-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
@@ -625,7 +655,7 @@ document.addEventListener('DOMContentLoaded',function(){
     </div>
   </div>
   <nav id="mnav" class="mnav">
-    <a href="#top">Home</a><a href="#contact">Contact</a><a href="#projects">Projects</a><a href="#stack">Stack</a><a href="./writing.html">Writing</a>
+    <a href="#top">Home</a><a href="#projects">Projects</a><a href="#about">Experience</a><a href="#stack">Stack</a><a href="#contact">Contact</a><a href="./writing.html">Writing</a>
   </nav>
 </header>
 
@@ -1303,39 +1333,61 @@ function updateProg(){ const h=document.documentElement; const max=h.scrollHeigh
   if(scrollBlur) scrollBlur.classList.toggle('on', h.scrollTop>4); }
 addEventListener('scroll',updateProg,{passive:true}); addEventListener('resize',updateProg); updateProg();
 
-// active section highlight in nav
+// active section highlight in nav — a small dot slides under the active top-level item
 const navLinks=[...document.querySelectorAll('.nav-links a')];
+const navLinksEl=document.querySelector('.nav-links');
 const navInd=document.querySelector('.nav-ind');
-// The underline is driven every scroll frame (not eased on a state change), so it
-// tracks the scroll continuously with zero trailing. Sections in vertical order,
-// each mapped to its nav link.
-const SPY=[['top','#top'],['contact','#contact'],['projects','#projects'],['stack','#stack']];
-const linkFor={}; navLinks.forEach(a=>linkFor[a.getAttribute('href')]=a);
-const spySecs=SPY.map(([id,href])=>({el:document.getElementById(id),link:linkFor[href]})).filter(s=>s.el&&s.link);
-if(navInd) navInd.style.transition='none'; // per-frame drive, no CSS trailing
-const geo=link=>({x:link.offsetLeft+12,w:Math.max(0,link.offsetWidth-24)});
-let curIdx=-1;
+const moreBtn=document.querySelector('.nav-more-btn');
+const topTargets={
+  top:   document.querySelector('.nav-links a[href="#top"]'),
+  about: document.querySelector('.nav-links a[href="#about"]'),      // "Experience"
+  projects: document.querySelector('.nav-links a[href="#projects"]'),
+  contact: moreBtn,                                                  // lives under "More"
+  stack:   moreBtn,
+};
+// sections in vertical page order, each mapped to the top-level element whose dot lights
+const SPY=['top','about','contact','projects','stack'];
+const spySecs=SPY.map(id=>({sec:document.getElementById(id), el:topTargets[id]})).filter(s=>s.sec&&s.el);
+const allTargets=[...new Set(Object.values(topTargets))].filter(Boolean);
+// center of a target relative to .nav-links, regardless of DOM nesting (More is nested)
+const centerOf=el=>{ const r=el.getBoundingClientRect(), nr=navLinksEl.getBoundingClientRect(); return r.left-nr.left+r.width/2; };
+let curEl=null;
+const SPY_LINE=90, SPY_BAND=130;
+// driven every scroll frame so the dot glides continuously (no CSS trailing) — like sam.larp.af
 function updateSpy(){
   if(!navInd||!spySecs.length) return;
-  const line=90, BAND=110, y=scrollY;
-  // scroll offset at which each section reaches the line just under the sticky nav
-  const b=spySecs.map((s,i)=> i===0 ? 0 : s.el.getBoundingClientRect().top+y-line );
+  const y=scrollY;
+  const b=spySecs.map((s,i)=> i===0 ? 0 : s.sec.getBoundingClientRect().top+y-SPY_LINE );
   let i=0; for(let k=0;k<b.length;k++){ if(y>=b[k]-0.5) i=k; }
-  // glide toward the next link over the last BAND px before its boundary
-  let g=geo(spySecs[i].link);
+  // glide toward the next item over the last BAND px before its boundary
+  let x=centerOf(spySecs[i].el);
   if(i<b.length-1){
-    const f=Math.min(1,Math.max(0,(y-(b[i+1]-BAND))/BAND));
-    if(f>0){ const g2=geo(spySecs[i+1].link); g={x:g.x+(g2.x-g.x)*f, w:g.w+(g2.w-g.w)*f}; }
+    const f=Math.min(1,Math.max(0,(y-(b[i+1]-SPY_BAND))/SPY_BAND));
+    if(f>0) x += (centerOf(spySecs[i+1].el)-x)*f;
   }
-  navInd.style.width=g.w+'px'; navInd.style.transform='translateX('+g.x+'px)'; navInd.style.opacity='1';
-  // colour switches at the midpoint of the crossing
-  const activeIdx=(i<b.length-1 && y>=b[i+1]-BAND/2)?i+1:i;
-  if(activeIdx!==curIdx){ curIdx=activeIdx; navLinks.forEach(a=>a.classList.toggle('active',a===spySecs[activeIdx].link)); }
+  navInd.style.left=x+'px'; navInd.style.opacity='1';
+  // active colour switches at the midpoint of the crossing
+  const ai=(i<b.length-1 && y>=b[i+1]-SPY_BAND/2)?i+1:i;
+  const el=spySecs[ai].el;
+  if(el!==curEl){ curEl=el; allTargets.forEach(t=>t.classList.toggle('active',t===el)); }
 }
 let spyRaf=0;
 addEventListener('scroll',()=>{ if(!spyRaf) spyRaf=requestAnimationFrame(()=>{ updateSpy(); spyRaf=0; }); },{passive:true});
-addEventListener('resize',()=>{ curIdx=-1; updateSpy(); });
+addEventListener('resize',()=>{ curEl=null; updateSpy(); });
+addEventListener('load',updateSpy);
 updateSpy();
+
+// "More" dropdown
+(function(){
+  const more=document.getElementById('navMore'); if(!more) return;
+  const btn=more.querySelector('.nav-more-btn');
+  const open=()=>{ more.classList.add('open'); btn.setAttribute('aria-expanded','true'); };
+  const close=()=>{ more.classList.remove('open'); btn.setAttribute('aria-expanded','false'); };
+  btn.addEventListener('click',e=>{ e.stopPropagation(); more.classList.contains('open')?close():open(); });
+  more.querySelectorAll('.nav-menu a').forEach(a=>a.addEventListener('click',close));
+  document.addEventListener('click',e=>{ if(!more.contains(e.target)) close(); });
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape') close(); });
+})();
 
 // cursor spotlight — follows the pointer (desktop only)
 const glow=document.querySelector('.cursor-glow');
