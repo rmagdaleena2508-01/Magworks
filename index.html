@@ -141,14 +141,23 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
   .achv .a-k{font-size:12.5px;color:var(--muted);margin-top:3px}
   .achv-note{margin-top:14px;font-size:13px;color:var(--muted-2);font-style:italic}
 
-  /* ---- contact ---- */
-  .contact-row{display:flex;gap:10px;flex-wrap:wrap}
-  @media(max-width:560px){.contact-row{gap:12px;justify-content:space-between}.csq{flex:1;min-width:52px;max-width:64px}}
-  .csq{width:52px;height:52px;border:1px solid var(--border);border-radius:var(--r);display:grid;place-items:center;
-    color:var(--muted);transition:.2s;position:relative}
-  .csq:hover{color:var(--fg);border-color:var(--border-2);background:var(--card);transform:translateY(-2px)}
-  .csq svg{width:19px;height:19px}
-  .csq .ext{position:absolute;top:5px;right:5px;width:9px;height:9px;opacity:.5}
+  /* ---- contact (sam.larp.af style: 5-col dashed grid, icon box + label + arrow) ---- */
+  .contact-row{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+  .cq{display:flex;align-items:center;justify-content:flex-start;gap:10px;height:60px;padding:0 12px;color:var(--fg);
+    border-left:1px dashed var(--dash);border-right:1px dashed var(--dash);transition:background .2s ease;position:relative}
+  .cq:hover{background:color-mix(in srgb,var(--fg) 4%,transparent)}
+  .cq-ic{width:40px;height:40px;flex:none;display:grid;place-items:center;border:1.5px solid var(--border-2);border-radius:10px;
+    background:color-mix(in srgb,var(--fg) 3%,transparent);transition:background .2s ease}
+  .cq:hover .cq-ic{background:color-mix(in srgb,var(--fg) 6%,transparent)}
+  .cq-ic svg{width:18px;height:18px;color:var(--fg)}
+  .cq-txt{display:flex;align-items:center;gap:6px;min-width:0}
+  .cq-lab{font-size:14px;color:var(--fg);white-space:nowrap}
+  .cq-arr{width:12px;height:12px;flex:none;color:var(--muted-2);transform:rotate(-45deg);transition:transform .2s ease}
+  .cq:hover .cq-arr{transform:translate(2px,-2px) rotate(-45deg)}
+  @media(max-width:620px){
+    .cq{justify-content:center;padding:0}
+    .cq-txt{display:none}
+  }
 
   /* ---- social preview card (hover, first 4 contacts, laptop only) ---- */
   .sprev{position:fixed;z-index:120;width:264px;pointer-events:none;opacity:0;transform:translateY(6px) scale(.98);
@@ -865,10 +874,12 @@ const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=nu
 
 // contact icons
 const cRow=document.getElementById('contactRow');
-CHANNELS.forEach((c,i)=>{
-  const a=el('a','csq'); a.href=c.href; a.title=c.k; if(c.href.startsWith('http')){a.target='_blank';a.rel='noopener';}
-  a.innerHTML=c.icon;
-  if(i<4 && c.h) attachSocialPreview(a,c);   // hover preview on the first four socials (laptop only)
+const ARROW='<svg class="cq-arr" viewBox="0 0 512 512" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="48" d="m268 112 144 144-144 144m124-144H100"/></svg>';
+const SHORT={'X / Twitter':'Twitter','Email':'Mail'};
+CHANNELS.forEach((c)=>{
+  const label=SHORT[c.k]||c.k;
+  const a=el('a','cq'); a.href=c.href; a.title=c.k; if(c.href.startsWith('http')){a.target='_blank';a.rel='noopener noreferrer';}
+  a.innerHTML='<span class="cq-ic">'+c.icon+'</span><span class="cq-txt"><span class="cq-lab">'+label+'</span>'+ARROW+'</span>';
   cRow.appendChild(a);
 });
 
