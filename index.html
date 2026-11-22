@@ -701,10 +701,11 @@ const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=nu
 const cRow=document.getElementById('contactRow');
 const ARROW='<svg class="cq-arr" viewBox="0 0 512 512" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="48" d="m268 112 144 144-144 144m124-144H100"/></svg>';
 const SHORT={'X / Twitter':'Twitter','Email':'Mail'};
-CHANNELS.forEach((c)=>{
+CHANNELS.forEach((c,i)=>{
   const label=SHORT[c.k]||c.k;
   const a=el('a','cq'); a.href=c.href; a.title=c.k; if(c.href.startsWith('http')){a.target='_blank';a.rel='noopener noreferrer';}
   a.innerHTML='<span class="cq-ic">'+c.icon+'</span><span class="cq-txt"><span class="cq-lab">'+label+'</span>'+ARROW+'</span>';
+  if(i<4 && c.h) attachSocialPreview(a,c);   // hover preview card on the first four socials (laptop only)
   cRow.appendChild(a);
 });
 
