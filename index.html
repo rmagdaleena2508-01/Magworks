@@ -416,25 +416,6 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
   .cmdk-foot{display:flex;gap:14px;padding:9px 14px;border-top:1px solid var(--border);font-family:var(--mono);font-size:10px;color:var(--muted-2)}
   .cmdk-foot kbd{border:1px solid var(--border);border-radius:4px;padding:1px 5px;margin-right:3px}
 
-  /* ---- intro overlay (black screen + GSAP typing) ---- */
-  html.intro-lock,html.intro-lock body{overflow:hidden}
-  #intro{position:fixed;inset:0;z-index:2000;background:#000;display:flex;align-items:center;justify-content:center;padding:28px}
-  #intro .intro-stage{position:relative;width:min(760px,92vw);min-height:200px;display:grid;place-items:center}
-  #intro .intro-line{grid-area:1/1;margin:0;max-width:100%;text-align:center;will-change:transform,opacity}
-  #introL1{font-family:var(--serif);font-weight:400;color:#fafafa;font-size:clamp(28px,5.4vw,52px);line-height:1.25;letter-spacing:.01em;text-align:center}
-  /* fixed-layout typewriter: every char is laid out from the start (hidden), so revealing
-     them never reflows/re-wraps — kills the "internet" wrap blink on mobile */
-  #introL1 .tch{visibility:hidden}
-  #introL1 .tch.on{visibility:visible}
-  #introL1 .tch.caret{position:relative}
-  #introL1 .tch.caret::after{content:'▍';position:absolute;left:100%;top:0;color:#8fb3ff;animation:introCaret 1s steps(1) infinite}
-  @keyframes introCaret{50%{opacity:0}}
-  #introL2{font-family:var(--sans);color:#d4d4d4;font-size:clamp(15px,2.5vw,19px);line-height:1.66;max-width:620px;opacity:0}
-  #introL2 b{color:#fafafa;font-weight:600}
-  #introSkip{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:5;font-family:var(--mono);font-size:11px;
-    letter-spacing:.06em;color:#9a9a9a;background:none;border:none;cursor:pointer;padding:8px 14px;transition:color .2s}
-  #introSkip:hover{color:#cfcfcf}
-  @media(prefers-reduced-motion:reduce){#intro{display:none}}
   footer.site a{color:var(--muted);text-decoration:underline;text-underline-offset:2px}
   footer.site a:hover{color:var(--fg)}
 </style>
@@ -444,162 +425,6 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
 <body>
 <div class="page-rails" aria-hidden="true"></div>
 
-<div id="intro">
-  <div class="intro-stage">
-    <p id="introL1" class="intro-line"></p>
-    <p id="introL2" class="intro-line"></p>
-  </div>
-  <button id="introSkip" type="button">skip intro</button>
-</div>
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/TextPlugin.min.js"></script>
-<script>
-// GSAP is deferred (off the critical path); this init waits for DOMContentLoaded,
-// which fires after deferred scripts execute, so window.gsap is ready by then.
-document.addEventListener('DOMContentLoaded',function(){
-  const intro=document.getElementById('intro');
-  if(!intro) return;
-  const l1=document.getElementById('introL1'), l2=document.getElementById('introL2');
-  const LINE1A='Welcome';
-  const LINE1='Welcome to my corner of the internet!';
-  const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
-  let seen=false; try{ seen=sessionStorage.getItem('introSeen')==='1'; }catch(e){}
-  let done=false;
-  function finish(){ if(done) return; done=true;
-    try{ sessionStorage.setItem('introSeen','1'); }catch(e){}
-    document.documentElement.classList.remove('intro-lock');
-    intro.style.display='none'; intro.remove();
-  }
-  // plays once PER SESSION (sessionStorage): a fresh open plays it, but returning to
-  // Home from Writing/Contact in the same session does not replay it; a later visit
-  // (new session) shows it again. Skipped for reduced-motion or if GSAP fails.
-  if(seen || reduce || !window.gsap){ finish(); return; }
-  const IS_MOBILE = matchMedia('(max-width:680px)').matches;   // black dissolve on phones, glass on laptop
-  document.documentElement.classList.add('intro-lock');
-  window.scrollTo(0,0);
-  gsap.registerPlugin(TextPlugin);
-  gsap.set(l2,{yPercent:0,y:64,opacity:0});
-  gsap.set(l1,{y:0,opacity:1});
-  // lay out EVERY character up front (hidden) so the browser fixes the wrap once; typing
-  // only flips chars visible, so the line never reflows/re-wraps mid-type (no blink)
-  l1.textContent='';
-  const chars=[...LINE1].map(ch=>{ const s=document.createElement('span'); s.className='tch'; s.textContent=ch; l1.appendChild(s); return s; });
-  let lastCaret=-1;
-  function revealTo(nf){ const n=Math.round(nf);
-    for(let i=0;i<chars.length;i++) chars[i].classList.toggle('on', i<n);
-    const ci=Math.min(n,chars.length)-1;
-    if(ci!==lastCaret){ if(chars[lastCaret]) chars[lastCaret].classList.remove('caret'); if(ci>=0&&chars[ci]) chars[ci].classList.add('caret'); lastCaret=ci; } }
-  function clearCaret(){ if(chars[lastCaret]) chars[lastCaret].classList.remove('caret'); }
-
-  // Glass pixelated top-to-bottom reveal. Two layers over the live hero:
-  //  (1) a backdrop-filter BLUR sheet, cleared top->bottom by a tiny alpha mask, and
-  //  (2) a DRAWN glass-tile canvas (smoked translucent squares + seam + top highlight)
-  //      that also covers/obscures the hero — so it works on every device, and the hero
-  //      is never shown sharp-and-whole. Both clear over the same soft threshold.
-  // ORDER FIX: the covering frame is drawn SYNCHRONOUSLY (full glass) and the black
-  // backdrop is only handed off on the NEXT frame, so the hero can never flash before
-  // the glass is in place. Ends fully clear -> invisible removal (no sudden cut).
-  let dissolveTween=null;
-  // laptop = glass reveal; mobile = plain black pixel dissolve
-  function pixelDissolve(onDone,dur){ (IS_MOBILE ? blackDissolve : glassDissolve)(onDone,dur); }
-
-  // black pixelated top-to-bottom dissolve (mobile). Blocks fade over a soft window,
-  // top row first; covering frame drawn synchronously before the black bg is handed
-  // off, so the hero never flashes; ends fully clear (invisible removal).
-  function blackDissolve(onDone,dur){
-    const cv=document.createElement('canvas');
-    cv.style.cssText='position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none';
-    intro.insertBefore(cv, intro.firstChild);
-    const dpr=Math.min(2, window.devicePixelRatio||1), W=innerWidth, H=innerHeight;
-    cv.width=Math.ceil(W*dpr); cv.height=Math.ceil(H*dpr);
-    const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr);
-    const cell=Math.max(16, Math.round(Math.min(W,H)/30));
-    const cols=Math.ceil(W/cell), rows=Math.ceil(H/cell), spread=7, FADE=0.22;
-    const th=new Float32Array(cols*rows);
-    for(let r=0;r<rows;r++)for(let c=0;c<cols;c++) th[r*cols+c]=(r+Math.random()*spread)/(rows+spread);
-    function draw(p){ ctx.clearRect(0,0,W,H); ctx.fillStyle='#000';
-      for(let r=0;r<rows;r++){ const rb=r*cols, y=r*cell; for(let c=0;c<cols;c++){
-        const a=(th[rb+c]-p)/FADE; if(a>0){ ctx.globalAlpha=a<1?a:1; ctx.fillRect(c*cell, y, cell+1, cell+1); } } }
-      ctx.globalAlpha=1; }
-    draw(-FADE);                                        // full black NOW, before revealing
-    requestAnimationFrame(()=>{ intro.style.background='transparent'; });
-    const obj={p:-FADE};
-    dissolveTween=gsap.to(obj,{p:1+FADE,duration:(dur||2.9),ease:'sine.inOut',
-      onUpdate:()=>draw(obj.p), onComplete:onDone});
-  }
-
-  // glass pixelated reveal (laptop) — two layers over the live hero:
-  //  (1) a backdrop-filter BLUR sheet, cleared top->bottom by a tiny alpha mask, and
-  //  (2) a DRAWN smoked glass-tile canvas (also obscures the hero). Covering frame
-  //      drawn synchronously before the black bg is handed off (no flash).
-  function glassDissolve(onDone,dur){
-    const dpr=Math.min(2, window.devicePixelRatio||1), W=innerWidth, H=innerHeight;
-    const blur=document.createElement('div');
-    blur.style.cssText='position:fixed;inset:0;z-index:0;pointer-events:none;will-change:mask-image;'+
-      '-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4);'+
-      '-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-size:100% 100%;mask-size:100% 100%;'+
-      '-webkit-mask-mode:alpha;mask-mode:alpha';
-    const tiles=document.createElement('canvas');
-    tiles.style.cssText='position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none';
-    tiles.width=Math.ceil(W*dpr); tiles.height=Math.ceil(H*dpr);
-    intro.insertBefore(tiles, intro.firstChild);
-    intro.insertBefore(blur, intro.firstChild);
-    const tc=tiles.getContext('2d'); tc.scale(dpr,dpr);
-
-    const cell=Math.max(20, Math.round(Math.min(W,H)/26));
-    const cols=Math.ceil(W/cell), rows=Math.ceil(H/cell), spread=7, SS=4, FADE=0.24;
-    const th=new Float32Array(cols*rows);
-    for(let r=0;r<rows;r++)for(let c=0;c<cols;c++) th[r*cols+c]=(r+Math.random()*spread)/(rows+spread);
-    const mc=document.createElement('canvas'); mc.width=cols*SS; mc.height=rows*SS;
-    const mx=mc.getContext('2d');
-    function draw(p){
-      mx.clearRect(0,0,mc.width,mc.height); mx.fillStyle='#fff'; tc.clearRect(0,0,W,H);
-      for(let r=0;r<rows;r++){ const rb=r*cols, my=r*SS, y=r*cell; for(let c=0;c<cols;c++){
-        const a=(th[rb+c]-p)/FADE; if(a<=0) continue;
-        const av=a<1?a:1, x=c*cell;
-        mx.globalAlpha=av; mx.fillRect(c*SS, my, SS, SS);                       // blur mask
-        tc.globalAlpha=av;      tc.fillStyle='rgba(8,10,14,.42)';  tc.fillRect(x, y, cell, cell);         // smoked glass (obscures hero)
-        tc.globalAlpha=av*0.5;  tc.fillStyle='rgba(255,255,255,.14)'; tc.fillRect(x, y, cell, 2);         // top highlight
-        tc.globalAlpha=av*0.4;  tc.strokeStyle='rgba(255,255,255,.10)'; tc.lineWidth=1; tc.strokeRect(x+0.5, y+0.5, cell-1, cell-1); // seam
-      } }
-      mx.globalAlpha=1; tc.globalAlpha=1;
-      const url='url('+mc.toDataURL()+')'; blur.style.webkitMaskImage=url; blur.style.maskImage=url;
-    }
-    draw(-FADE);                                        // full glass NOW, before revealing anything
-    requestAnimationFrame(()=>{ intro.style.background='transparent'; }); // hand off black only once glass is painted
-    const obj={p:-FADE};
-    dissolveTween=gsap.to(obj,{p:1+FADE,duration:(dur||2.9),ease:'sine.inOut',
-      onUpdate:()=>draw(obj.p), onComplete:onDone});
-  }
-
-  // typewriter: grow textContent one character at a time at a human pace (no TextPlugin,
-  // which re-set the node and caused a blink on mobile). A tween on a character index
-  // reveals via slice(), so it never clears/re-inserts — smooth on every device.
-  const PER=0.075;                       // seconds per character (~13 cps, human-ish)
-  const nObj={n:0};
-  let dissolveStarted=false;
-  const skipBtn=document.getElementById('introSkip');
-  const startDissolve=(dur)=>{ dissolveStarted=true; if(skipBtn) skipBtn.style.display='none'; pixelDissolve(finish, dur); };
-  const tl=gsap.timeline();
-  tl.to(nObj,{n:LINE1A.length, duration:LINE1A.length*PER, ease:'none', onUpdate:()=>revealTo(nObj.n)})   // "Welcome"
-    .to(nObj,{n:chars.length, duration:(chars.length-LINE1A.length)*PER, ease:'none', onUpdate:()=>revealTo(nObj.n)}, '+=0.55') // pause, then the rest + "!"
-    .add(clearCaret)
-    .to({},{duration:0.5})                                          // brief beat to read it
-    .to(l1,{duration:0.55,y:-40,opacity:0,ease:'power2.in'})        // welcome lifts away
-    .add(startDissolve);                                            // straight into the hero reveal
-  // Skip: hide the button immediately, jump past the TEXT, and play a QUICK dissolve.
-  function skip(){ if(done) return;
-    if(skipBtn) skipBtn.style.display='none';
-    if(dissolveStarted){ if(dissolveTween) dissolveTween.progress(1); return; }  // already transitioning -> fast-forward
-    tl.kill(); clearCaret(); gsap.set([l1,l2],{opacity:0}); startDissolve(); }   // same-speed dissolve as normal
-
-  if(skipBtn) skipBtn.addEventListener('click',skip);
-  // only an explicit key skips automatically — a stray tap/scroll must NOT nuke the intro on mobile
-  addEventListener('keydown',skip,{once:true,passive:true});
-  // safety: never leave a black screen stuck (long enough to never clip the dissolve)
-  setTimeout(()=>{ if(!done) finish(); }, 16000);
-});
-</script>
 
 <div class="scroll-prog" aria-hidden="true"><i></i></div>
 <div class="cursor-glow" aria-hidden="true"></div>
@@ -1124,7 +949,6 @@ renderPills('all');
 
 // build log — a short, honest changelog of this site (newest first)
 const CHANGELOG=[
-  ['Sep 2026','Cinematic intro','Typed two-beat welcome, then a pixelated glass reveal (black on phones) into the hero — a first impression that is mine, not a template.'],
   ['Sep 2026','Made the site a brand','Reused my avatar as the favicon and link-share card, and set the title to "a builder with high agency."'],
   ['Sep 2026','Tech pills that talk back','Hover or tap a pill for a xylophone note and the real projects on this page that use that tool.'],
   ['Sep 2026','Nav that tracks the scroll','One underline that glides between links in real time, ordered to the page; fixed it skipping the short Contact section.'],
