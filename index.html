@@ -125,6 +125,7 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
 
   /* ---- section title ---- */
   h2.sec{font-family:var(--serif);font-size:26px;font-weight:400;margin-bottom:18px}
+  .sec-sub{margin:-12px 0 22px;color:var(--muted);font-size:14.5px;line-height:1.6;max-width:58ch}
 
   /* ---- about ---- */
   .about li{list-style:none;position:relative;padding-left:16px;margin-bottom:14px;color:var(--muted);font-size:15px}
@@ -501,7 +502,8 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
 
   <div class="row">
     <div class="row-inner rv" id="projects">
-      <h2 class="sec">My recent works</h2>
+      <h2 class="sec">Projects</h2>
+      <p class="sec-sub">A curated showcase of things I've built — and broken.</p>
       <div class="pgrid" id="projectGrid"></div>
     </div>
   </div>
@@ -616,7 +618,7 @@ const ICONS = {
 
 const PROJECTS = [
   {
-    title:'CubeSight', tagline:'Camera-based Rubik\'s Cube solver in 3D',
+    title:'CubeSight', tagline:'Scan a Rubik\'s Cube with your camera, solve it in 3D.',
     desc:'Point your camera at a cube — it reads the colors, computes a near-optimal solution, and walks you through every move in 3D.',
     tags:['JavaScript','Three.js','Web Workers'],
     badge:'3D · Camera Vision', status:'live', statusLabel:'Live',
@@ -625,7 +627,7 @@ const PROJECTS = [
     live:'https://cubesight.vercel.app/', repo:'https://github.com/rmagdaleena2508-01/cubesolver'
   },
   {
-    title:'CSI SRMIST VDP', tagline:'Computer Society of India — student chapter site',
+    title:'CSI SRMIST VDP', tagline:'The live chapter site for SRMIST\'s Computer Society of India.',
     desc:'Official website for the CSI student chapter at SRMIST Vadapalani — events, community, and a per-session photo archive.',
     tags:['React','Tailwind CSS','GSAP'],
     badge:'Live · Vercel', status:'live', statusLabel:'Live',
@@ -634,7 +636,7 @@ const PROJECTS = [
     live:'https://csi-srmistvdp.vercel.app/', repo:'https://github.com/rmagdaleena2508-01/CSI-SRMISTVDP'
   },
   {
-    title:'Financial Advisory Agents', tagline:'Multi-agent debt & insurance advisor',
+    title:'Financial Advisory Agents', tagline:'Two AI agents that plan debt payoff and find insurance gaps.',
     desc:'Two AI agents that calculate exact debt repayment strategy and life-insurance coverage gaps. Deterministic Python tools do the math — the LLM only reasons and communicates, never estimates numbers.',
     tags:['CrewAI','GPT-4o-mini','MongoDB','Pydantic'],
     badge:'30 tests passing', status:'proto', statusLabel:'Internship build',
@@ -643,7 +645,7 @@ const PROJECTS = [
     repo:'https://github.com/rmagdaleena2508-01/financial-advisory-agents'
   },
   {
-    title:'ProblemBase', tagline:'Search engine for unsolved software problems',
+    title:'ProblemBase', tagline:'A search engine for real, unsolved software problems.',
     desc:'Scrapes Hacker News + GitHub issues in parallel, clusters complaints by theme with Llama 3.3 70B, and ranks by severity. Built because customer discovery is broken.',
     tags:['FastAPI','Groq · Llama 3.3 70B','React'],
     badge:'Full pipeline demo', status:'proto', statusLabel:'Prototype',
