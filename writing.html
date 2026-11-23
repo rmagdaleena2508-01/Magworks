@@ -112,6 +112,9 @@
   .post-src svg{width:12px;height:12px}
   .post-title{font-family:var(--serif);font-size:clamp(24px,3.4vw,30px);line-height:1.2;color:var(--fg)}
   .post-desc{color:var(--muted);font-size:14.5px;line-height:1.6;margin-top:10px}
+  /* A teaser: the words sit behind a soft cloud of blur, so the post is read on LinkedIn. */
+  .post-desc.blurred{position:relative;filter:blur(4.5px);opacity:.75;user-select:none;pointer-events:none;
+    -webkit-mask-image:linear-gradient(90deg,#000 0%,#000 55%,rgba(0,0,0,.35) 100%);mask-image:linear-gradient(90deg,#000 0%,#000 55%,rgba(0,0,0,.35) 100%)}
   .post-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px;flex-wrap:wrap}
   .post-tags{display:flex;flex-wrap:wrap;gap:6px}
   .post-tag{font-family:var(--mono);font-size:10.5px;color:var(--muted);border:1px solid var(--border);border-radius:6px;padding:3px 8px}
@@ -187,6 +190,21 @@
   <div class="row">
     <div class="row-inner rv">
       <div class="post-list">
+
+        <a class="post" href="https://www.linkedin.com/posts/rmagdaleena-aiengineer_7-things-that-made-my-college-life-more-productive-share-7528171262762803200-rbGJ/" target="_blank" rel="noopener">
+          <div class="post-meta">
+            <span>Nov 18, 2026</span><span class="dot"></span><span>1 min read</span>
+          </div>
+          <div class="post-title">7 things that made my college life more productive (no waking up at 4 AM)</div>
+          <div class="post-desc blurred" aria-hidden="true">A walk before class without my phone, running notes, revising yesterday's lectures, 7 hackathons so far, learning from seniors, Dan Koe's articles and side projects: the small habits that actually helped.</div>
+          <div class="post-foot">
+            <div class="post-tags">
+              <span class="post-tag">College</span>
+              <span class="post-tag">Productivity</span>
+            </div>
+            <span class="post-read">Read <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M9 7h8v8"/></svg></span>
+          </div>
+        </a>
 
         <a class="post" href="https://x.com/timotheoszzzz/status/2076777980450455613" target="_blank" rel="noopener">
           <div class="post-meta">
