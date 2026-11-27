@@ -322,8 +322,43 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
   .fquote .fq-line{width:34px;height:1px;background:var(--border-2);margin:16px auto}
   .fquote .fq-name{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted-2)}
 
-  footer.site{padding:26px 24px;text-align:center;font-size:12.5px;color:var(--muted-2)}
-  footer.site b{color:var(--muted);font-weight:600}
+  /* ---- footer: dashed-grid, matches the page rails ---- */
+  footer.site{color:var(--muted-2);font-size:12.5px}
+  footer.site b{color:var(--fg);font-weight:600}
+  .foot-top{border-top:1px dashed var(--dash)}
+  .foot-inner{max-width:var(--wrap);margin:0 auto;padding:44px 24px}
+  .foot-grid{display:grid;grid-template-columns:1.7fr 1fr 1.1fr;gap:28px}
+  .foot-name{font-family:var(--serif);font-size:27px;color:var(--fg);line-height:1}
+  .foot-one{margin-top:10px;color:var(--muted);font-size:13.5px;line-height:1.55;max-width:34ch}
+  .foot-status{margin-top:16px}
+  .foot-status .lbl{text-transform:uppercase}
+  .fcol-h{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted-2);margin-bottom:12px}
+  .fcol-nav{display:flex;flex-direction:column;gap:9px}
+  .fcol-nav a{color:var(--muted);font-size:13.5px;width:fit-content;transition:color .2s,transform .2s}
+  .fcol-nav a:hover{color:var(--fg);transform:translateX(2px)}
+  .foot-socials{display:flex;flex-wrap:wrap;gap:8px}
+  .foot-socials a{width:36px;height:36px;display:grid;place-items:center;border:1px solid var(--border);border-radius:9px;color:var(--muted);transition:.2s}
+  .foot-socials a:hover{color:var(--fg);border-color:var(--border-2);background:var(--card);transform:translateY(-2px)}
+  .foot-socials a svg{width:16px;height:16px}
+  .foot-base{border-top:1px dashed var(--dash)}
+  .foot-base-inner{max-width:var(--wrap);margin:0 auto;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  .foot-built{font-family:var(--mono);font-size:11px;color:var(--muted-2)}
+  @media(max-width:640px){
+    .foot-grid{grid-template-columns:1fr;gap:26px}
+    .foot-inner{padding:34px 18px}
+    .foot-base-inner{padding:16px 18px}
+  }
+  /* ---- back to top ---- */
+  .backtop{position:fixed;right:18px;bottom:18px;z-index:90;width:40px;height:40px;display:grid;place-items:center;
+    border:1px solid var(--border-2);border-radius:11px;background:color-mix(in srgb,var(--card) 88%,transparent);
+    -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);color:var(--muted);
+    opacity:0;transform:translateY(10px) scale(.9);pointer-events:none;
+    transition:opacity .25s ease,transform .25s cubic-bezier(.5,1.6,.4,1),color .2s,border-color .2s}
+  .backtop.on{opacity:1;transform:none;pointer-events:auto}
+  .backtop:hover{color:var(--fg);border-color:var(--ring);transform:translateY(-2px)}
+  .backtop:active{transform:scale(.94)}
+  .backtop svg{width:17px;height:17px}
+  @media(prefers-reduced-motion:reduce){.backtop{transition:opacity .2s}}
 
   /* ---- reveal on scroll ---- */
   .js .rv{opacity:0;transform:translateY(14px)}
@@ -426,8 +461,9 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
   .cmdk-foot{display:flex;gap:14px;padding:9px 14px;border-top:1px solid var(--border);font-family:var(--mono);font-size:10px;color:var(--muted-2)}
   .cmdk-foot kbd{border:1px solid var(--border);border-radius:4px;padding:1px 5px;margin-right:3px}
 
-  footer.site a{color:var(--muted);text-decoration:underline;text-underline-offset:2px}
+  footer.site a{color:var(--muted);text-decoration:none}
   footer.site a:hover{color:var(--fg)}
+  .foot-base a{text-decoration:underline;text-underline-offset:2px}
 </style>
 <!-- Vercel Web Analytics: cookieless, aggregate page views only, no personal data. Loads only on the live domain. -->
 <script>if(location.hostname==='magdaleena.me'||location.hostname.endsWith('.vercel.app')){window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments);};var s=document.createElement('script');s.defer=true;s.src='/_vercel/insights/script.js';document.head.appendChild(s);}</script>
@@ -589,7 +625,47 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
 
 </main>
 
-<footer class="site">Designed &amp; Developed by <b>Magdaleena</b> · © 2026 · <a href="./privacy.html">Privacy</a> · All rights reserved.</footer>
+<footer class="site">
+  <div class="foot-top">
+    <div class="foot-inner">
+      <div class="foot-grid">
+        <div class="fcol fcol-brand">
+          <div class="foot-name">Magdaleena</div>
+          <p class="foot-one">AI engineer building multi-agent systems and the guardrails that keep them honest.</p>
+          <div class="nowbar foot-status">
+            <span class="dot"></span>
+            <span class="lbl">Open to</span>
+            <b>AI intern / SWE roles</b>
+            <span>· worldwide remote ·</span>
+            <span id="clock2" class="mono"></span>
+          </div>
+        </div>
+        <nav class="fcol fcol-nav" aria-label="Footer navigation">
+          <div class="fcol-h">Navigate</div>
+          <a href="#top">Home</a>
+          <a href="#contact">Contact</a>
+          <a href="#projects">Projects</a>
+          <a href="#stack">Stack</a>
+          <a href="./writing.html">Writing</a>
+        </nav>
+        <div class="fcol fcol-social">
+          <div class="fcol-h">Elsewhere</div>
+          <div class="foot-socials" id="footSocials"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot-base">
+    <div class="foot-base-inner">
+      <span>© 2026 <b>Magdaleena</b> · <a href="./privacy.html">Privacy</a></span>
+      <span class="foot-built">Built in a single HTML file.</span>
+    </div>
+  </div>
+</footer>
+
+<button class="backtop" id="backTop" aria-label="Back to top" title="Back to top">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+</button>
 
 <!-- command palette (⌘K) -->
 <div id="cmdk" class="cmdk" aria-hidden="true">
@@ -694,8 +770,8 @@ const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=nu
 })();
 
 // live local time (India / IST) beside the location
-(function(){ const clk=document.getElementById('clock'); if(!clk) return;
-  const fmt=()=>{ try{ clk.textContent=new Date().toLocaleTimeString('en-US',{timeZone:'Asia/Kolkata',hour:'numeric',minute:'2-digit',second:'2-digit'})+' IST'; }catch(e){ clk.textContent=''; } };
+(function(){ const clk=document.getElementById('clock'), clk2=document.getElementById('clock2'); if(!clk&&!clk2) return;
+  const fmt=()=>{ try{ const t=new Date().toLocaleTimeString('en-US',{timeZone:'Asia/Kolkata',hour:'numeric',minute:'2-digit',second:'2-digit'})+' IST'; if(clk)clk.textContent=t; if(clk2)clk2.textContent=t; }catch(e){ if(clk)clk.textContent=''; if(clk2)clk2.textContent=''; } };
   fmt(); setInterval(fmt,1000);
 })();
 
@@ -710,6 +786,15 @@ CHANNELS.forEach((c,i)=>{
   if(i<4 && c.h) attachSocialPreview(a,c);   // hover preview card on the first four socials (laptop only)
   cRow.appendChild(a);
 });
+
+// footer socials — same channels as icon buttons
+(function(){ const fs=document.getElementById('footSocials'); if(!fs) return;
+  CHANNELS.forEach(c=>{
+    const a=el('a'); a.href=c.href; a.title=c.k; a.setAttribute('aria-label',c.k);
+    if(c.href.startsWith('http')){a.target='_blank';a.rel='noopener noreferrer';}
+    a.innerHTML=c.icon; fs.appendChild(a);
+  });
+})();
 
 // hover preview cards for the first four social links — a little profile card
 // that lifts above the icon. Laptop only: on touch, a tap just opens the link.
@@ -1139,9 +1224,12 @@ const FINE = matchMedia('(hover:hover) and (pointer:fine)').matches
 // scroll progress bar
 const progBar=document.querySelector('.scroll-prog>i');
 const scrollBlur=document.querySelector('.scroll-blur');   // top blur: only once the page is scrolled
+const backTop=document.getElementById('backTop');          // back-to-top: shows after one screen
 function updateProg(){ const h=document.documentElement; const max=h.scrollHeight-h.clientHeight;
   const p=max>0?Math.min(1,h.scrollTop/max):0; if(progBar) progBar.style.transform='scaleX('+p+')';
-  if(scrollBlur) scrollBlur.classList.toggle('on', h.scrollTop>4); }
+  if(scrollBlur) scrollBlur.classList.toggle('on', h.scrollTop>4);
+  if(backTop) backTop.classList.toggle('on', h.scrollTop>640); }
+if(backTop) backTop.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
 addEventListener('scroll',updateProg,{passive:true}); addEventListener('resize',updateProg); updateProg();
 
 // nav underline: a self-correcting rAF slider that always eases to its target link
