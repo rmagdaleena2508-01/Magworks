@@ -7,3 +7,6 @@ assets/hero-banner-nonloop.mp4
 # agent skills (local tooling, not part of the site)
 .agents/
 .claude/
+
+# local-only demo audio — copyrighted, never commit
+assets/lofi-demo.mp3
