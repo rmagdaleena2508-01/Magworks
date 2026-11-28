@@ -232,7 +232,11 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
   .pfoot{margin-top:auto;display:flex;gap:10px;padding-top:10px}
   .plink{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted-2);transition:.2s}
   .plink:hover{color:var(--fg)}
-  .plink svg{width:14px;height:14px}
+  .plink svg{width:14px;height:14px;transition:transform .2s}
+  .plink-cs{color:var(--accent);font-weight:600}
+  html.light .plink-cs{color:#2563eb}
+  .plink-cs:hover{color:var(--fg)}
+  .plink-cs:hover svg{transform:translateX(2px)}
 
   /* ---- tech stack ---- */
   .stack-head{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px}
@@ -703,13 +707,34 @@ const PROJECTS = [
     live:'https://cubesight.vercel.app/', repo:'https://github.com/rmagdaleena2508-01/cubesolver'
   },
   {
+    title:'Sollu', tagline:'Voice-first civic AI for Tamil Nadu — know what\'s yours, in your own words.',
+    desc:'Reads government schemes, notices and laws and explains them in plain Tamil or English. The AI never decides eligibility (plain rules do), and every answer is checked against an official source.',
+    tags:['React 19','TypeScript','Gemini · Sarvam'],
+    badge:'Hackathon · solo', status:'live', statusLabel:'Live',
+    grad:'linear-gradient(135deg,#bcd3ff 0%,#5b9bf0 38%,#1e6fe0 68%,#0b2a6b 100%)',
+    shot:'./assets/sollu-hero.jpg', frame:true, fit:'cover',
+    live:'https://sollu-ai.vercel.app', repo:'https://github.com/rmagdaleena2508-01/Sollu',
+    caseStudy:'./sollu.html'
+  },
+  {
+    title:'Tribezo', tagline:'Talk to an island tribe whose language is English, reversed.',
+    desc:'A DSA project turned into a game: a C stack compiled to WebAssembly flips your words in the browser so you can talk to Zazo, who replies in a reversed language. Gemini writes his replies, with an honest fixed fallback.',
+    tags:['C · WASM','React','Gemini'],
+    badge:'DSA · solo', status:'live', statusLabel:'Live',
+    grad:'linear-gradient(135deg,#bfe3ff 0%,#7cc0f0 35%,#3f7fae 68%,#13303f 100%)',
+    shot:'./assets/tribezo-hero.jpg', frame:true, fit:'cover',
+    live:'https://tribezo-8tqo.vercel.app', repo:'https://github.com/rmagdaleena2508-01/tribezo',
+    caseStudy:'./tribezo.html'
+  },
+  {
     title:'CSI SRMIST VDP', tagline:'The live chapter site for SRMIST\'s Computer Society of India.',
     desc:'Official website for the CSI student chapter at SRMIST Vadapalani, includes events, community, and a per-session photo archive.',
-    tags:['React','Tailwind CSS','GSAP'],
+    tags:['Next.js','Tailwind CSS','Motion'],
     badge:'Live · Vercel', status:'live', statusLabel:'Live',
     grad:'linear-gradient(135deg,#93c5fd 0%,#3b82f6 40%,#1d4ed8 72%,#0b1a44 100%)',
     shot:'./assets/csi.webp', frame:true, fit:'cover',
-    live:'https://csi-srmistvdp.vercel.app/', repo:'https://github.com/rmagdaleena2508-01/CSI-SRMISTVDP'
+    live:'https://csi-srmistvdp.vercel.app/', repo:'https://github.com/rmagdaleena2508-01/CSI-SRMISTVDP',
+    caseStudy:'./csi.html'
   },
   {
     title:'Financial Advisory Agents', tagline:'Two AI agents that plan debt payoff and find insurance gaps.',
@@ -851,7 +876,8 @@ const pg=document.getElementById('projectGrid');
 PROJECTS.forEach(p=>{
   const card=el('div','pcard rv');
   const tags=p.tags.map(t=>`<span class="ptag-pill">${t}</span>`).join('');
-  const links = (p.live?`<a class="plink" href="${p.live}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18Z"/></svg>Live</a>`:'') +
+  const links = (p.caseStudy?`<a class="plink plink-cs" href="${p.caseStudy}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M5 12h14M13 6l6 6-6 6"/></svg>Case study</a>`:'') +
+    (p.live?`<a class="plink" href="${p.live}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18Z"/></svg>Live</a>`:'') +
     `<a class="plink" href="${p.repo}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.85 9.73.5.1.68-.22.68-.49 0-.24-.01-.87-.01-1.71-2.78.62-3.37-1.37-3.37-1.37-.46-1.18-1.11-1.5-1.11-1.5-.9-.63.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05a9.34 9.34 0 0 1 5 0c1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.94-2.34 4.81-4.57 5.06.36.32.68.94.68 1.9 0 1.37-.01 2.47-.01 2.81 0 .27.18.6.69.49A10.03 10.03 0 0 0 22 12.25C22 6.58 17.52 2 12 2Z"/></svg>Code</a>`;
   card.innerHTML = `
     <div class="pthumb"><div class="g" style="background:${p.grad}"></div>
