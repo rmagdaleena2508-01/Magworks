@@ -49,7 +49,7 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
     --border:#e5e5e5; --border-2:#d4d4d4; --dash:#d4d4d4;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  html{scroll-behavior:smooth;scroll-padding-top:64px;-webkit-text-size-adjust:100%}
+  html{scroll-behavior:smooth;scroll-padding-top:64px;-webkit-text-size-adjust:100%;overflow-x:clip}
   body{background:var(--bg);color:var(--fg);font-family:var(--sans);line-height:1.6;font-size:15px;position:relative;
     -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;transition:background .25s,color .25s;overflow-x:hidden;text-wrap:pretty}
   a{color:inherit;text-decoration:none}
@@ -712,7 +712,7 @@ const PROJECTS = [
     tags:['React 19','TypeScript','Gemini · Sarvam'],
     badge:'Hackathon · solo', status:'live', statusLabel:'Live',
     grad:'linear-gradient(135deg,#bcd3ff 0%,#5b9bf0 38%,#1e6fe0 68%,#0b2a6b 100%)',
-    shot:'./assets/sollu-hero.jpg', frame:true, fit:'cover',
+    shot:'./assets/sollu-card.jpg', frame:true, fit:'cover',
     live:'https://sollu-ai.vercel.app', repo:'https://github.com/rmagdaleena2508-01/Sollu',
     caseStudy:'./sollu.html'
   },
