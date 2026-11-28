@@ -60,7 +60,7 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
   .mono{font-family:var(--mono)}
 
   /* ---- full-bleed dashed section rows: horizontal rule spans viewport, content re-centers ---- */
-  .row{width:100vw;margin-left:calc(50% - 50vw);border-top:1px dashed var(--dash)}
+  .row{width:100%;border-top:1px dashed var(--dash)}
   .row:first-of-type{border-top:none}
   .row-inner{max-width:var(--wrap);margin:0 auto;padding:40px 24px;position:relative}
   /* one continuous dashed frame for the vertical rails — never breaks between sections */
@@ -69,7 +69,7 @@ addEventListener('pageshow',function(e){if(e.persisted)scrollTo(0,0);});</script
   @media(max-width:640px){.row-inner{padding:28px 18px}}
 
   /* ---- nav ---- */
-  header{position:fixed;top:0;left:0;right:0;z-index:100;width:100vw;
+  header{position:fixed;top:0;left:0;right:0;z-index:100;
     background:color-mix(in srgb, var(--nav-bg) 85%, transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
     border-bottom:1px dashed var(--dash)}
   .nav-inner{max-width:var(--wrap);margin:0 auto;height:52px;display:flex;align-items:center;justify-content:space-between;
